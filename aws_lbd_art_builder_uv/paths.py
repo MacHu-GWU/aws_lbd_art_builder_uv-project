@@ -53,6 +53,9 @@ class PathEnum:
     dir_build = dir_project_root / "build"
     dir_dist = dir_project_root / "dist"
 
+    # Layer
+    path_build_in_container_script = dir_package / "layer" / "_build_in_container.py"
+
 
 path_enum = PathEnum()
 """

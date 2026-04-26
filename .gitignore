@@ -3,6 +3,7 @@ aws_lbd_art_builder_uv.egg-info/
 docs/source/**/index.md
 .claude/claude-code-message*
 tmp/
+examples/*/aws_lbd_art_builder_uv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

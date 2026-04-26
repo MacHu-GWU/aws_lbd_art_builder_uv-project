@@ -1,18 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from aws_lbd_art_builder_uv import api
-
-
-def test():
-    _ = api
-    _ = api.layer
-
-
 if __name__ == "__main__":
     from aws_lbd_art_builder_uv.tests import run_cov_test
 
     run_cov_test(
         __file__,
-        "aws_lbd_art_builder_uv.api",
+        "aws_lbd_art_builder_uv.layer",
+        is_folder=True,
         preview=False,
     )
