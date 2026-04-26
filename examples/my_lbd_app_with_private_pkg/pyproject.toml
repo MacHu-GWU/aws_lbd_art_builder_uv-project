@@ -1,0 +1,17 @@
+[project]
+name = "my_lbd_app_with_private_pkg"
+version = "0.1.1"
+requires-python = ">=3.11"
+dependencies = [
+    "attrs",
+    "boto3",
+    "my_private_lib",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[[tool.uv.index]]
+name = "private"
+url = "https://private.pypi.example.com/simple/"
