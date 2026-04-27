@@ -110,10 +110,11 @@ class UvLambdaLayerContainerBuilder(BaseLambdaLayerContainerBuilder):
     Uses official AWS SAM Docker images to ensure Lambda runtime compatibility
     for packages with C extensions.
 
-    :param lib_install_spec: The pip install specifier for ``aws_lbd_art_builder_uv``.
-        Defaults to PyPI release. For development testing, use a git URL like::
+    The container script (``_build_in_container.py``) is pure stdlib — no
+    third-party packages are installed inside the container except ``uv``.
 
-            "aws_lbd_art_builder_uv @ git+https://github.com/MacHu-GWU/aws_lbd_art_builder_uv-project.git@main"
+    **Mount scheme**: ``{project_root}/build/lambda/`` → ``/var/task/``
+    (not the project root, to avoid host ``.venv`` conflicts).
 
     .. seealso::
 
@@ -123,18 +124,36 @@ class UvLambdaLayerContainerBuilder(BaseLambdaLayerContainerBuilder):
     path_script: Path = dataclasses.field(
         default=path_enum.path_build_in_container_script,
     )
-    lib_install_spec: str = dataclasses.field(
-        default="aws_lbd_art_builder_uv>=0.1.1,<1.0.0",
-    )
 
     @property
     def docker_run_args(self) -> list[str]:
-        args = super().docker_run_args
-        args.extend([
-            "--lib-install-spec",
-            self.lib_install_spec,
-        ])
-        return args
+        """
+        Override to mount ``build/lambda/`` instead of project root.
+
+        Layout inside container::
+
+            /var/task/                            ← build/lambda/
+            ├── _build_in_container.py
+            ├── private-repository-credentials.json
+            └── layer/
+                ├── repo/{pyproject.toml, uv.lock}
+                └── artifacts/python/
+        """
+        return [
+            "docker",
+            "run",
+            "--rm",
+            "--name",
+            self.container_name,
+            "--platform",
+            self.platform,
+            "--mount",
+            f"type=bind,source={self.path_layout.dir_build_lambda},target=/var/task",
+            self.image_uri,
+            "python",
+            "-u",
+            "/var/task/_build_in_container.py",
+        ]
 
     def step_1_preflight_check(self):
         super().step_1_preflight_check()
@@ -145,3 +164,37 @@ class UvLambdaLayerContainerBuilder(BaseLambdaLayerContainerBuilder):
                 f"cannot proceed with uv-based build. "
                 f"Please run 'uv lock' to generate the lock file."
             )
+
+    def step_2_prepare_environment(self):
+        """
+        Prepare the build environment: copy build script, credentials,
+        pyproject.toml and uv.lock to the mount directory.
+        """
+        self.log("--- Step 2 - Prepare Environment")
+        # Copy build script to build/lambda/ (outside layer/ so it survives clean)
+        self.step_2_1_copy_build_script()
+        # Dump credentials to build/lambda/ (outside layer/ so it survives clean)
+        self.step_2_2_setup_private_repository_credential()
+        # Clean and recreate build/lambda/layer/, copy project files to repo/
+        self.step_2_3_setup_build_dir()
+        self.step_2_4_copy_uv_files()
+
+    def step_2_3_setup_build_dir(self):
+        """
+        Clean and recreate the build directory structure.
+        """
+        self.log("--- Step 2.3 - Setup Build Directory")
+        self.path_layout.clean(skip_prompt=True)
+        self.path_layout.mkdirs()
+
+    def step_2_4_copy_uv_files(self):
+        """
+        Copy pyproject.toml and uv.lock to the isolated repo directory.
+        """
+        self.log("--- Step 2.4 - Copy UV files to repo/")
+        self.path_layout.copy_pyproject_toml(printer=self.log)
+        self.path_layout.copy_file(
+            p_src=self.path_layout.dir_project_root / "uv.lock",
+            p_dst=self.path_layout.dir_repo / "uv.lock",
+            printer=self.log,
+        )

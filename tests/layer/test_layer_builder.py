@@ -106,7 +106,7 @@ class TestUvLambdaLayerContainerBuilder:
         )
         assert "arm64" in builder.image_uri
 
-    def test_default_lib_install_spec(self, tmp_path):
+    def test_docker_run_args_mounts_build_lambda(self, tmp_path):
         p = tmp_path / "pyproject.toml"
         p.write_text("[project]\nname = 'test'\nversion = '0.1.0'\n")
         builder = UvLambdaLayerContainerBuilder(
@@ -114,23 +114,32 @@ class TestUvLambdaLayerContainerBuilder:
             py_ver_major=3,
             py_ver_minor=12,
             is_arm=False,
-        )
-        assert "aws_lbd_art_builder_uv" in builder.lib_install_spec
-
-    def test_docker_run_args_includes_lib_install_spec(self, tmp_path):
-        p = tmp_path / "pyproject.toml"
-        p.write_text("[project]\nname = 'test'\nversion = '0.1.0'\n")
-        custom_spec = "aws_lbd_art_builder_uv @ git+https://github.com/MacHu-GWU/aws_lbd_art_builder_uv-project.git@main"
-        builder = UvLambdaLayerContainerBuilder(
-            path_pyproject_toml=p,
-            py_ver_major=3,
-            py_ver_minor=12,
-            is_arm=False,
-            lib_install_spec=custom_spec,
         )
         args = builder.docker_run_args
-        idx = args.index("--lib-install-spec")
-        assert args[idx + 1] == custom_spec
+        # Should mount build/lambda/ not project root
+        mount_arg = [a for a in args if "type=bind" in a][0]
+        assert str(tmp_path / "build" / "lambda") in mount_arg
+        assert "target=/var/task" in mount_arg
+        # Script path should be /var/task/_build_in_container.py
+        assert "/var/task/_build_in_container.py" in args
+
+    def test_step_2_copies_uv_files(self, tmp_path):
+        p = tmp_path / "pyproject.toml"
+        p.write_text("[project]\nname = 'test'\nversion = '0.1.0'\n")
+        (tmp_path / "uv.lock").write_text("# lock content")
+        builder = UvLambdaLayerContainerBuilder(
+            path_pyproject_toml=p,
+            py_ver_major=3,
+            py_ver_minor=12,
+            is_arm=False,
+        )
+        builder.step_2_prepare_environment()
+        # Check build script was copied
+        assert (tmp_path / "build_lambda_layer_in_container.py").exists()
+        # Check pyproject.toml and uv.lock were copied to repo/
+        dir_repo = tmp_path / "build" / "lambda" / "layer" / "repo"
+        assert (dir_repo / "pyproject.toml").exists()
+        assert (dir_repo / "uv.lock").exists()
 
 
 if __name__ == "__main__":
