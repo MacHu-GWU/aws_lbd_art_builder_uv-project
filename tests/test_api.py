@@ -5,7 +5,7 @@ from aws_lbd_art_builder_uv import api
 
 def test():
     _ = api
-    _ = api.layer
+    _ = api.layer_api
 
 
 if __name__ == "__main__":
