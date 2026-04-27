@@ -5,28 +5,19 @@ Example: Build Lambda layer using uv inside a Docker container.
 
 Usage::
 
-    cd examples/my_lbd_app-project
+    cd examples/my_lbd_app_with_private_pkg
     .venv/bin/python example_build_lambda_layer_using_uv_in_container.py
 """
 
-import shutil
-from pathlib import Path
-
-dir_project_root = Path(__file__).parent
-package_name = "aws_lbd_art_builder_uv"
-dir_source = dir_project_root.parent.parent / package_name
-dir_target = dir_project_root / package_name
-print(f"copy from {dir_source} to {dir_target} ...")
-shutil.rmtree(dir_target, ignore_errors=True)
-shutil.copytree(dir_source, dir_target)
-
+from example_settings import settings
 import aws_lbd_art_builder_uv.api as aws_lbd_art_builder_uv
 
 builder = aws_lbd_art_builder_uv.layer_api.UvLambdaLayerContainerBuilder(
-    path_pyproject_toml=dir_project_root / "pyproject.toml",
-    py_ver_major=3,
-    py_ver_minor=12,
-    is_arm=False,
+    path_pyproject_toml=settings.path_pyproject_toml,
+    py_ver_major=settings.py_ver_major,
+    py_ver_minor=settings.py_ver_minor,
+    is_arm=settings.is_arm,
+    credentials=settings.credentials,
     skip_prompt=True,
 )
 

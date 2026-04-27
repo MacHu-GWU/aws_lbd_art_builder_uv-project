@@ -43,4 +43,4 @@ run = ".venv/bin/python example_build_lambda_layer_using_uv_in_local.py"
 [tasks.test-in-container]
 description = "🧪 Test the build in container script"
 depends = ["inst"]
-run = ".venv/bin/python example_build_lambda_layer_using_uv_in_container.py
+run = ".venv/bin/python example_build_lambda_layer_using_uv_in_container.py"
