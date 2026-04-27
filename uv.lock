@@ -44,15 +44,15 @@ wheels = [
 
 [[package]]
 name = "aws-lbd-art-builder-core"
-version = "0.1.3"
+version = "0.1.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "func-args" },
     { name = "soft-deps" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/18/33/38671e289fb4f7c53534f362cf5d599c97345bd3dee9f33f415295c9fca7/aws_lbd_art_builder_core-0.1.3.tar.gz", hash = "sha256:354c080bd2ec1845100495c58e4dd8689beb8c1b12bdc32186b71e09a2732ce1", size = 32461, upload-time = "2026-04-27T06:19:57.447Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/48/4a/a332b80852b7422237bd05ae00a4c149bc281f36179bdc053dddf71f8281/aws_lbd_art_builder_core-0.1.4.tar.gz", hash = "sha256:fa82616eb09b2fe7926b25f64ef8acc0f0e114c75955ea294b40d7c5f26c07e8", size = 34388, upload-time = "2026-04-27T18:23:52.293Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/85/a7/d2d58cf541faf8fac6b9f3350408c81d072982cbf84b576ee9d41ed32762/aws_lbd_art_builder_core-0.1.3-py3-none-any.whl", hash = "sha256:52d1be05c286f6c39ea7ddaf2be5b9f7ee5110650bfddad0e95d1ee2adca341a", size = 37150, upload-time = "2026-04-27T06:19:58.883Z" },
+    { url = "https://files.pythonhosted.org/packages/b0/79/6e4dafa02b3575c8a1782605913658a99efabc14da742b1b237e50050b43/aws_lbd_art_builder_core-0.1.4-py3-none-any.whl", hash = "sha256:d666fdefce77f78176fe9438e19b641d381b56b1bdcc69d22ea2ddb42a61f4b3", size = 39826, upload-time = "2026-04-27T18:23:53.247Z" },
 ]
 
 [package.optional-dependencies]
@@ -108,7 +108,7 @@ upload = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aws-lbd-art-builder-core", specifier = ">=0.1.3,<1.0.0" },
+    { name = "aws-lbd-art-builder-core", specifier = ">=0.1.4,<1.0.0" },
     { name = "aws-lbd-art-builder-core", extras = ["publish"], marker = "extra == 'publish'" },
     { name = "aws-lbd-art-builder-core", extras = ["upload"], marker = "extra == 'upload'" },
     { name = "docfly", marker = "extra == 'doc'", specifier = "==3.0.3" },
