@@ -44,7 +44,7 @@ classifiers = [
 # Core Dependencies
 # ------------------------------------------------------------------------------
 dependencies = [
-    "aws-lbd-art-builder-core[upload,publish]>=0.1.2,<1.0.0",
+    "aws-lbd-art-builder-core>=0.1.2,<1.0.0",
 ]
 
 # ------------------------------------------------------------------------------
@@ -55,6 +55,13 @@ dependencies = [
 # IMPORTANT: all optional dependencies has to be compatible with the "requires-python" field
 # ------------------------------------------------------------------------------
 [project.optional-dependencies]
+upload = [
+    "aws-lbd-art-builder-core[upload]",
+]
+
+publish = [
+    "aws-lbd-art-builder-core[publish]",
+]
 
 # ------------------------------------------------------------------------------
 # Local Development dependenceies

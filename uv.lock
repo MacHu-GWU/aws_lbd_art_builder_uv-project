@@ -71,7 +71,7 @@ name = "aws-lbd-art-builder-uv"
 version = "0.1.1"
 source = { editable = "." }
 dependencies = [
-    { name = "aws-lbd-art-builder-core", extra = ["publish", "upload"] },
+    { name = "aws-lbd-art-builder-core" },
 ]
 
 [package.optional-dependencies]
@@ -94,15 +94,23 @@ mise = [
     { name = "httpx" },
     { name = "pygithub" },
 ]
+publish = [
+    { name = "aws-lbd-art-builder-core", extra = ["publish"] },
+]
 test = [
     { name = "moto" },
     { name = "pytest" },
     { name = "pytest-cov" },
 ]
+upload = [
+    { name = "aws-lbd-art-builder-core", extra = ["upload"] },
+]
 
 [package.metadata]
 requires-dist = [
-    { name = "aws-lbd-art-builder-core", extras = ["upload", "publish"], specifier = ">=0.1.2,<1.0.0" },
+    { name = "aws-lbd-art-builder-core", specifier = ">=0.1.2,<1.0.0" },
+    { name = "aws-lbd-art-builder-core", extras = ["publish"], marker = "extra == 'publish'" },
+    { name = "aws-lbd-art-builder-core", extras = ["upload"], marker = "extra == 'upload'" },
     { name = "docfly", marker = "extra == 'doc'", specifier = "==3.0.3" },
     { name = "furo", marker = "extra == 'doc'", specifier = "==2024.8.6" },
     { name = "httpx", marker = "extra == 'mise'", specifier = ">=0.28.0,<1.0.0" },
@@ -121,7 +129,7 @@ requires-dist = [
     { name = "sphinx-jinja", marker = "extra == 'doc'", specifier = ">=2.0.2,<3.0.0" },
     { name = "tomli", marker = "python_full_version < '3.11' and extra == 'mise'", specifier = ">=2.0.0,<3.0.0" },
 ]
-provides-extras = ["dev", "test", "doc", "mise"]
+provides-extras = ["upload", "publish", "dev", "test", "doc", "mise"]
 
 [[package]]
 name = "babel"
