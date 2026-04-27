@@ -106,3 +106,13 @@ depends = ["inst"]
 description = "🔧 Update GitHub repository description and homepage using PyGithub"
 run = ".venv/bin/python .mise/tasks/update-github-metadata.py"
 depends = ["inst"]
+
+[tasks.int-test]
+description = "🧪 Run integration test in 'examples' folder"
+run = """
+mise run -C examples/my_lbd_app-project test-in-local
+mise run -C examples/my_lbd_app-project test-in-container
+mise run -C examples/my_lbd_app_with_private_pkg test-in-local
+mise run -C examples/my_lbd_app_with_private_pkg test-in-container
+"""
+depends = ["inst"]

@@ -38,3 +38,10 @@ builder.step_1_preflight_check()
 builder.step_2_prepare_environment()
 builder.step_3_execute_build()
 builder.step_4_finalize_artifacts()
+
+# Validate artifacts (check_linux=True for container builds)
+aws_lbd_art_builder_uv.layer_api.validate_artifacts(
+    dir_python=builder.path_layout.dir_python,
+    path_pyproject_toml=builder.path_layout.path_pyproject_toml,
+    check_linux=True,
+)

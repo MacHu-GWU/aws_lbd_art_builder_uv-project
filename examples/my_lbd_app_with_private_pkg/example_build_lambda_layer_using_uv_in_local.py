@@ -26,3 +26,9 @@ builder.step_1_preflight_check()
 builder.step_2_prepare_environment()
 builder.step_3_execute_build()
 builder.step_4_finalize_artifacts()
+
+# Validate artifacts
+aws_lbd_art_builder_uv.layer_api.validate_artifacts(
+    dir_python=builder.path_layout.dir_python,
+    path_pyproject_toml=settings.path_pyproject_toml,
+)
