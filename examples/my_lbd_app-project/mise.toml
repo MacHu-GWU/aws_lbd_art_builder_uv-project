@@ -15,3 +15,13 @@ run = "rm -r .venv"
 description = "💾 Install all Python dependencies using uv (syncs from pyproject.toml and uv.lock)"
 depends = ["venv-create"]
 run = "uv sync --all-extras"
+
+[tasks.test-in-local]
+description = "🧪 Test the build in local script"
+depends = ["inst"]
+run = ".venv/bin/python example_build_lambda_layer_using_uv_in_local.py"
+
+[tasks.test-in-container]
+description = "🧪 Test the build in container script"
+depends = ["inst"]
+run = ".venv/bin/python example_build_lambda_layer_using_uv_in_container.py"
