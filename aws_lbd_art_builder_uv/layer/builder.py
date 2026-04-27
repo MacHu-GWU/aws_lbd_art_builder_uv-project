@@ -110,6 +110,11 @@ class UvLambdaLayerContainerBuilder(BaseLambdaLayerContainerBuilder):
     Uses official AWS SAM Docker images to ensure Lambda runtime compatibility
     for packages with C extensions.
 
+    :param lib_install_spec: The pip install specifier for ``aws_lbd_art_builder_uv``.
+        Defaults to PyPI release. For development testing, use a git URL like::
+
+            "aws_lbd_art_builder_uv @ git+https://github.com/MacHu-GWU/aws_lbd_art_builder_uv-project.git@main"
+
     .. seealso::
 
         :class:`~aws_lbd_art_builder_core.layer.builder.BaseLambdaLayerContainerBuilder`
@@ -118,6 +123,18 @@ class UvLambdaLayerContainerBuilder(BaseLambdaLayerContainerBuilder):
     path_script: Path = dataclasses.field(
         default=path_enum.path_build_in_container_script,
     )
+    lib_install_spec: str = dataclasses.field(
+        default="aws_lbd_art_builder_uv>=0.1.1,<1.0.0",
+    )
+
+    @property
+    def docker_run_args(self) -> list[str]:
+        args = super().docker_run_args
+        args.extend([
+            "--lib-install-spec",
+            self.lib_install_spec,
+        ])
+        return args
 
     def step_1_preflight_check(self):
         super().step_1_preflight_check()

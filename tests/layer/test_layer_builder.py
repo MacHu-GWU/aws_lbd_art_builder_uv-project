@@ -106,6 +106,32 @@ class TestUvLambdaLayerContainerBuilder:
         )
         assert "arm64" in builder.image_uri
 
+    def test_default_lib_install_spec(self, tmp_path):
+        p = tmp_path / "pyproject.toml"
+        p.write_text("[project]\nname = 'test'\nversion = '0.1.0'\n")
+        builder = UvLambdaLayerContainerBuilder(
+            path_pyproject_toml=p,
+            py_ver_major=3,
+            py_ver_minor=12,
+            is_arm=False,
+        )
+        assert "aws_lbd_art_builder_uv" in builder.lib_install_spec
+
+    def test_docker_run_args_includes_lib_install_spec(self, tmp_path):
+        p = tmp_path / "pyproject.toml"
+        p.write_text("[project]\nname = 'test'\nversion = '0.1.0'\n")
+        custom_spec = "aws_lbd_art_builder_uv @ git+https://github.com/MacHu-GWU/aws_lbd_art_builder_uv-project.git@main"
+        builder = UvLambdaLayerContainerBuilder(
+            path_pyproject_toml=p,
+            py_ver_major=3,
+            py_ver_minor=12,
+            is_arm=False,
+            lib_install_spec=custom_spec,
+        )
+        args = builder.docker_run_args
+        idx = args.index("--lib-install-spec")
+        assert args[idx + 1] == custom_spec
+
 
 if __name__ == "__main__":
     from aws_lbd_art_builder_uv.tests import run_cov_test
