@@ -1,9 +1,26 @@
 [project]
 name = "my_lbd_app"
 version = "0.1.1"
-requires-python = "==3.12"
+requires-python = "==3.12.*"
 dependencies = [
     "boto3",
+]
+
+[project.optional-dependencies]
+aws_lbd_art_builder_core = [
+    "aws-lbd-art-builder-core[upload,publish]>=0.1.2,<1.0.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = [
+    "my_lbd_app*"
+]
+exclude = [
+]
+
+[tool.setuptools.package-data]
+"my_lbd_app" = [
 ]
 
 [build-system]
