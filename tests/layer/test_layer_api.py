@@ -16,6 +16,7 @@ def test_layer_api_imports():
     _ = api.upload_layer_zip_to_s3
     _ = api.LambdaLayerVersionPublisher
     _ = api.LayerDeployment
+    _ = api.validate_artifacts
 
 
 if __name__ == "__main__":

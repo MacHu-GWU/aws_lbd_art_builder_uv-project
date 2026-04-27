@@ -13,9 +13,6 @@ for the full architecture guide.
 import subprocess
 import dataclasses
 from pathlib import Path
-from functools import cached_property
-
-from func_args.api import REQ
 
 import aws_lbd_art_builder_core.api as aws_lbd_art_builder_core
 
@@ -23,7 +20,9 @@ from ..paths import path_enum
 
 
 @dataclasses.dataclass(frozen=True)
-class UvLambdaLayerContainerBuilder(aws_lbd_art_builder_core.layer_api.BaseLambdaLayerContainerBuilder):
+class UvLambdaLayerContainerBuilder(
+    aws_lbd_art_builder_core.layer_api.BaseLambdaLayerContainerBuilder,
+):  # pragma: no cover
     """
     Build a Lambda layer using uv inside a Docker container.
 
@@ -113,10 +112,15 @@ class UvLambdaLayerContainerBuilder(aws_lbd_art_builder_core.layer_api.BaseLambd
         for the container script to read.
         """
         self.log_sub_header("Step 2.3 - Setup Private Repository Credential")
-        if not isinstance(self.credentials, aws_lbd_art_builder_core.layer_api.Credentials):
+        if not isinstance(
+            self.credentials, aws_lbd_art_builder_core.layer_api.Credentials
+        ):
             self.log_detail("No private repository credentials provided, skip.")
             return
-        p = self.path_layout.dir_build_lambda_layer / "private-repository-credentials.json"
+        p = (
+            self.path_layout.dir_build_lambda_layer
+            / "private-repository-credentials.json"
+        )
         self.log_detail(f"Dump private repository credentials to {p}")
         self.credentials.dump(path=p)
 

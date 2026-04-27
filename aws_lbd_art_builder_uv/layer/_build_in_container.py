@@ -35,17 +35,17 @@ from datetime import datetime
 
 
 # --- Logging helpers (match the host-side BaseLogger format) ------------------
-def _log_sub_header(title: str):
+def _log_sub_header(title: str):  # pragma: no cover
     print("")
     print("+----- " + title)
     print("|")
 
 
-def _log(msg: str):
+def _log(msg: str):  # pragma: no cover
     print("|  " + msg)
 
 
-def parse_args():
+def parse_args():  # pragma: no cover
     parser = argparse.ArgumentParser(
         description="Build Lambda layer using uv inside a Docker container.",
     )
@@ -57,7 +57,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
+def main():  # pragma: no cover
     args = parse_args()
     dir_task = Path(args.dir_task)
 
@@ -142,5 +142,5 @@ def main():
     _log("Container-side build completed successfully!")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()
