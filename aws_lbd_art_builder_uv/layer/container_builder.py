@@ -23,7 +23,7 @@ from ..paths import path_enum
 
 
 @dataclasses.dataclass(frozen=True)
-class UvLambdaLayerContainerBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
+class UvLambdaLayerContainerBuilder(aws_lbd_art_builder_core.layer_api.BaseLambdaLayerContainerBuilder):
     """
     Build a Lambda layer using uv inside a Docker container.
 
@@ -34,80 +34,10 @@ class UvLambdaLayerContainerBuilder(aws_lbd_art_builder_core.layer_api.BaseLogge
     """
 
     # fmt: off
-    path_pyproject_toml: Path = dataclasses.field(default=REQ)
-    py_ver_major: int = dataclasses.field(default=REQ)
-    py_ver_minor: int = dataclasses.field(default=REQ)
-    is_arm: bool = dataclasses.field(default=REQ)
     path_script: Path = dataclasses.field(default=path_enum.path_build_in_container_script)
     credentials: aws_lbd_art_builder_core.layer_api.Credentials | None = dataclasses.field(default=None)
     skip_prompt: bool = dataclasses.field(default=False)
     # fmt: on
-
-    @cached_property
-    def path_layout(self) -> aws_lbd_art_builder_core.layer_api.LayerPathLayout:
-        return aws_lbd_art_builder_core.layer_api.LayerPathLayout(
-            path_pyproject_toml=self.path_pyproject_toml,
-        )
-
-    @property
-    def image_tag(self) -> str:
-        if self.is_arm:
-            return "latest-arm64"
-        else:
-            return "latest-x86_64"
-
-    @property
-    def image_uri(self) -> str:
-        return (
-            f"public.ecr.aws/sam"
-            f"/build-python{self.py_ver_major}.{self.py_ver_minor}"
-            f":{self.image_tag}"
-        )
-
-    @property
-    def platform(self) -> str:
-        if self.is_arm:
-            return "linux/arm64"
-        else:
-            return "linux/amd64"
-
-    @property
-    def container_name(self) -> str:
-        suffix = "arm64" if self.is_arm else "amd64"
-        return (
-            f"lambda_layer_builder"
-            f"-python{self.py_ver_major}{self.py_ver_minor}"
-            f"-{suffix}"
-        )
-
-    @property
-    def docker_run_args(self) -> list[str]:
-        """
-        Mount ``build/lambda/layer/`` to ``/var/task``.
-
-        Layout inside container::
-
-            /var/task/                                       ← build/lambda/layer/
-            ├── build_lambda_layer_in_container.py
-            ├── private-repository-credentials.json
-            ├── repo/{pyproject.toml, uv.lock, .venv/}
-            └── artifacts/python/
-        """
-        return [
-            "docker",
-            "run",
-            "--rm",
-            "--name",
-            self.container_name,
-            "--platform",
-            self.platform,
-            "--mount",
-            f"type=bind,source={self.path_layout.dir_build_lambda_layer},target=/var/task",
-            self.image_uri,
-            "python",
-            "-u",
-            "/var/task/build_lambda_layer_in_container.py",
-        ]
 
     def run(self):
         self.step_1_preflight_check()

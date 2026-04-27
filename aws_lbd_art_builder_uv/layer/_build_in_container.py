@@ -41,6 +41,17 @@ from pathlib import Path
 from datetime import datetime
 
 
+# --- Logging helpers (match the host-side BaseLogger format) ------------------
+def _log_sub_header(title: str):
+    print("")
+    print("+----- " + title)
+    print("|")
+
+
+def _log(msg: str):
+    print("|  " + msg)
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Build Lambda layer using uv inside a Docker container.",
@@ -64,20 +75,20 @@ def main():
     # --------------------------------------------------------------------------
     # Step 1 — Verify container execution environment
     # --------------------------------------------------------------------------
-    print("--- Step 1: Verify container environment ...")
-    print(f"dir_task = {dir_task}")
-    print(f"dir_repo = {dir_repo}")
+    _log_sub_header("Container Step 1 - Verify Environment")
+    _log(f"dir_task = {dir_task}")
+    _log(f"dir_repo = {dir_repo}")
     if not dir_repo.exists():
         raise EnvironmentError(
             f"{dir_repo} does not exist. "
             f"This script expects the host to mount build/lambda/layer/ to {dir_task}."
         )
-    print("Verification OK.")
+    _log("Verification OK.")
 
     # --------------------------------------------------------------------------
     # Step 2 — Install uv
     # --------------------------------------------------------------------------
-    print("--- Step 2: Install uv ...")
+    _log_sub_header("Container Step 2 - Install uv")
     st = datetime.now()
     subprocess.run(
         "curl -LsSf https://astral.sh/uv/install.sh | sh",
@@ -85,14 +96,14 @@ def main():
         check=True,
     )
     elapsed = (datetime.now() - st).total_seconds()
-    print(f"install uv elapsed: {elapsed:.2f} seconds")
+    _log(f"install uv elapsed: {elapsed:.2f} seconds")
 
     path_bin_uv = Path("/root/.local/bin/uv")
 
     # --------------------------------------------------------------------------
     # Step 3 — Setup private repository credentials (optional)
     # --------------------------------------------------------------------------
-    print("--- Step 3: Setup credentials ...")
+    _log_sub_header("Container Step 3 - Setup Credentials")
     if path_credentials.exists():
         with open(path_credentials, "r") as f:
             cred = json.load(f)
@@ -104,16 +115,16 @@ def main():
         key_pass = f"UV_INDEX_{upper_name}_PASSWORD"
         os.environ[key_user] = username
         os.environ[key_pass] = password
-        print(f"Loaded credentials for private repository: {index_name}")
-        print(f"Set environment variable {key_user}")
-        print(f"Set environment variable {key_pass}")
+        _log(f"Loaded credentials for private repository: {index_name}")
+        _log(f"Set environment variable {key_user}")
+        _log(f"Set environment variable {key_pass}")
     else:
-        print("No private repository credentials found, using public PyPI only.")
+        _log("No private repository credentials found, using public PyPI only.")
 
     # --------------------------------------------------------------------------
     # Step 4 — Run uv sync
     # --------------------------------------------------------------------------
-    print("--- Step 4: Run 'uv sync' ...")
+    _log_sub_header("Container Step 4 - Run 'uv sync'")
     st = datetime.now()
     subprocess.run(
         [
@@ -128,14 +139,14 @@ def main():
         check=True,
     )
     elapsed = (datetime.now() - st).total_seconds()
-    print(f"uv sync elapsed: {elapsed:.2f} seconds")
+    _log(f"uv sync elapsed: {elapsed:.2f} seconds")
 
     major, minor = sys.version_info[:2]
     dir_site_packages = (
         dir_repo / ".venv" / "lib" / f"python{major}.{minor}" / "site-packages"
     )
-    print(f"Dependencies installed at: {dir_site_packages}")
-    print("Container-side build completed successfully!")
+    _log(f"Dependencies installed at: {dir_site_packages}")
+    _log("Container-side build completed successfully!")
 
 
 if __name__ == "__main__":
