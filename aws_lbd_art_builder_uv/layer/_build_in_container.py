@@ -6,36 +6,35 @@ Container-based Lambda layer build script for uv dependency management.
 This script runs inside a Docker container and uses **only Python standard library**
 (3.11+). No third-party packages are needed — just ``uv`` (installed at runtime).
 
-The host mounts ``{project_root}/build/lambda/`` to ``/var/task/``. The directory
-layout inside the container looks like::
+The host mounts ``{project_root}/build/lambda/layer/`` to ``/var/task/``.
+Layout inside the container::
 
     /var/task/                                    ← mount point
-    ├── _build_in_container.py                    ← this script
+    ├── build_lambda_layer_in_container.py        ← this script (renamed copy)
     ├── private-repository-credentials.json       ← optional credentials
-    └── layer/
-        ├── repo/
-        │   ├── pyproject.toml                    ← copied by host step_2
-        │   └── uv.lock                           ← copied by host step_2
-        └── artifacts/
-            └── python/                           ← output directory
+    ├── repo/
+    │   ├── pyproject.toml
+    │   ├── uv.lock
+    │   └── .venv/                                ← created by uv sync
+    └── artifacts/
+        └── python/
 
-**Usage**::
+**Container-side steps**:
 
-    # Default: no private repository
-    python _build_in_container.py
+1. Verify ``/var/task/repo`` exists (proves we're inside the container).
+2. Install ``uv`` globally via the official installer.
+3. Load private repository credentials (optional).
+4. Run ``uv sync --frozen --no-dev --no-install-project --link-mode=copy``.
 
-    # With credentials (already dumped by host)
-    python _build_in_container.py
+The host-side step 4 moves ``repo/.venv/lib/pythonX.Y/site-packages/``
+into ``artifacts/python/`` after the container exits.
 
-**EXECUTION SAFETY**
-
-THIS SCRIPT MUST BE EXECUTED IN THE CONTAINER, NOT ON THE HOST MACHINE.
+**EXECUTION SAFETY**: This script must NOT be executed on the host machine.
 """
 
 import os
 import sys
 import json
-import shutil
 import argparse
 import subprocess
 from pathlib import Path
@@ -59,28 +58,26 @@ def main():
     dir_task = Path(args.dir_task)
 
     # --- Derived paths ---------------------------------------------------------
-    dir_layer = dir_task / "layer"
-    dir_repo = dir_layer / "repo"
-    dir_python = dir_layer / "artifacts" / "python"
+    dir_repo = dir_task / "repo"
     path_credentials = dir_task / "private-repository-credentials.json"
 
     # --------------------------------------------------------------------------
-    # 1. Verify container execution environment
+    # Step 1 — Verify container execution environment
     # --------------------------------------------------------------------------
-    print("--- Verify the current runtime ...")
+    print("--- Step 1: Verify container environment ...")
     print(f"dir_task = {dir_task}")
     print(f"dir_repo = {dir_repo}")
     if not dir_repo.exists():
         raise EnvironmentError(
             f"{dir_repo} does not exist. "
-            f"This script expects the host to mount build/lambda/ to {dir_task}."
+            f"This script expects the host to mount build/lambda/layer/ to {dir_task}."
         )
-    print("Runtime verification OK.")
+    print("Verification OK.")
 
     # --------------------------------------------------------------------------
-    # 2. Install uv within the container
+    # Step 2 — Install uv
     # --------------------------------------------------------------------------
-    print("--- Install uv ...")
+    print("--- Step 2: Install uv ...")
     st = datetime.now()
     subprocess.run(
         "curl -LsSf https://astral.sh/uv/install.sh | sh",
@@ -93,9 +90,9 @@ def main():
     path_bin_uv = Path("/root/.local/bin/uv")
 
     # --------------------------------------------------------------------------
-    # 3. Setup private repository credentials (if any)
+    # Step 3 — Setup private repository credentials (optional)
     # --------------------------------------------------------------------------
-    print("--- Setup credentials ...")
+    print("--- Step 3: Setup credentials ...")
     if path_credentials.exists():
         with open(path_credentials, "r") as f:
             cred = json.load(f)
@@ -114,9 +111,9 @@ def main():
         print("No private repository credentials found, using public PyPI only.")
 
     # --------------------------------------------------------------------------
-    # 4. Run uv sync in the repo directory
+    # Step 4 — Run uv sync
     # --------------------------------------------------------------------------
-    print("--- Run 'uv sync' ...")
+    print("--- Step 4: Run 'uv sync' ...")
     st = datetime.now()
     subprocess.run(
         [
@@ -133,27 +130,12 @@ def main():
     elapsed = (datetime.now() - st).total_seconds()
     print(f"uv sync elapsed: {elapsed:.2f} seconds")
 
-    # --------------------------------------------------------------------------
-    # 5. Move site-packages to artifacts/python/
-    # --------------------------------------------------------------------------
-    print("--- Move site-packages to artifacts/python/ ...")
     major, minor = sys.version_info[:2]
     dir_site_packages = (
         dir_repo / ".venv" / "lib" / f"python{major}.{minor}" / "site-packages"
     )
-    if not dir_site_packages.exists():
-        raise FileNotFoundError(
-            f"site-packages directory not found: {dir_site_packages}"
-        )
-    print(f"dir_site_packages = {dir_site_packages}")
-    print(f"dir_python = {dir_python}")
-    # Ensure the target parent exists, then move
-    dir_python.parent.mkdir(parents=True, exist_ok=True)
-    if dir_python.exists():
-        shutil.rmtree(dir_python)
-    shutil.move(str(dir_site_packages), str(dir_python))
-
-    print("Container-based layer build completed successfully!")
+    print(f"Dependencies installed at: {dir_site_packages}")
+    print("Container-side build completed successfully!")
 
 
 if __name__ == "__main__":

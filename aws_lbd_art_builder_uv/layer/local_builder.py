@@ -30,6 +30,17 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
     Uses ``uv sync --frozen`` with lock files for reproducible builds,
     environment variable authentication, development dependency exclusion,
     and copy-based linking for Lambda compatibility.
+
+    **4-Step Build Workflow:**
+
+    1. **Preflight Check** (:meth:`step_1_preflight_check`):
+       Validate environment, tools, and project structure
+    2. **Prepare Environment** (:meth:`step_2_prepare_environment`):
+       Clean build directories and set up workspace
+    3. **Execute Build** (:meth:`step_3_execute_build`):
+       Run tool-specific dependency installation (override in subclass)
+    4. **Finalize Artifacts** (:meth:`step_4_finalize_artifacts`):
+       Transform output into Lambda-compatible structure (override in subclass)
     """
 
     # fmt: off

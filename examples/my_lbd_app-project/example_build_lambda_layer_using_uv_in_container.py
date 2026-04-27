@@ -37,4 +37,4 @@ builder = aws_lbd_art_builder_uv.layer_api.UvLambdaLayerContainerBuilder(
 builder.step_1_preflight_check()
 builder.step_2_prepare_environment()
 builder.step_3_execute_build()
-# builder.step_4_finalize_artifacts()
+builder.step_4_finalize_artifacts()
