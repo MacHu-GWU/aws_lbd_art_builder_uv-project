@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 """
-UV-based Lambda layer builder implementation.
+UV-based local Lambda layer builder.
 
-This module provides Lambda layer creation using UV's ultra-fast dependency
-management, supporting both local and containerized builds.
+:class:`UvLambdaLayerLocalBuilder` runs ``uv sync`` directly on the host
+machine to install dependencies into a Lambda-compatible layer structure.
 
-- :class:`UvLambdaLayerLocalBuilder`: Local uv-based builds
-- :class:`UvLambdaLayerContainerBuilder`: Containerized uv-based builds
+See ``docs/source/99-Maintainer-Guide/03-Build-Lambda-Layer-using-UV-in-Container``
+for the containerized variant's architecture guide.
 """
 
 import subprocess
@@ -27,20 +27,13 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
     """
     Build a Lambda layer using uv on the local machine.
 
-    Uses ``uv sync --frozen`` with lock files for reproducible builds,
-    environment variable authentication, development dependency exclusion,
-    and copy-based linking for Lambda compatibility.
+    Runs ``uv sync --frozen --no-dev --no-install-project --link-mode=copy``
+    on the host, then moves ``site-packages/`` into ``artifacts/python/``.
 
-    **4-Step Build Workflow:**
+    .. note::
 
-    1. **Preflight Check** (:meth:`step_1_preflight_check`):
-       Validate environment, tools, and project structure
-    2. **Prepare Environment** (:meth:`step_2_prepare_environment`):
-       Clean build directories and set up workspace
-    3. **Execute Build** (:meth:`step_3_execute_build`):
-       Run tool-specific dependency installation (override in subclass)
-    4. **Finalize Artifacts** (:meth:`step_4_finalize_artifacts`):
-       Transform output into Lambda-compatible structure (override in subclass)
+       Local builds produce host-native binaries.  For packages with C
+       extensions, use :class:`UvLambdaLayerContainerBuilder` instead.
     """
 
     # fmt: off
@@ -52,39 +45,23 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
 
     @cached_property
     def path_layout(self) -> aws_lbd_art_builder_core.layer_api.LayerPathLayout:
-        """
-        :class:`~aws_lbd_art_builder_core.layer.foundation.LayerPathLayout`
-        object for managing build paths.
-        """
         return aws_lbd_art_builder_core.layer_api.LayerPathLayout(
             path_pyproject_toml=self.path_pyproject_toml,
         )
 
     def run(self):
-        """
-        Execute the complete local build workflow in sequence.
-
-        Runs all four build phases in order. Override individual steps
-        or call steps directly for custom workflows.
-        """
         self.log_header("Start local Lambda layer build workflow")
         self.step_1_preflight_check()
         self.step_2_prepare_environment()
         self.step_3_execute_build()
         self.step_4_finalize_artifacts()
 
-    # --- step_1_preflight_check sub-steps
+    # --- Step 1 ---------------------------------------------------------------
     def step_1_preflight_check(self):
-        """
-        Perform read-only validation of build environment and project configuration.
-        """
         self.log_header("Step 1 - Preflight Check")
         self.step_1_1_print_info()
 
     def step_1_1_print_info(self):
-        """
-        Display build configuration and paths.
-        """
         # fmt: off
         self.log_sub_header("Step 1.1 - Print Build Info")
         self.log_detail(f"path_pyproject_toml = {self.path_pyproject_toml}")
@@ -93,21 +70,15 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
         self.log_detail(f"path_bin_uv         = {self.path_bin_uv}")
         # fmt: on
 
-    # --- step_2_prepare_environment sub-steps
+    # --- Step 2 ---------------------------------------------------------------
     def step_2_prepare_environment(self):
-        """
-        Set up necessary prerequisites for the build process.
-        """
         self.log_header("Step 2 - Prepare Environment")
         self.step_2_1_setup_build_dir()
         self.step_2_2_prepare_uv_stuff()
 
     def step_2_1_setup_build_dir(self):
         """
-        Prepare the build environment by cleaning and creating directories.
-
-        Ensures a clean slate for layer creation by removing previous artifacts
-        and establishing the required directory structure.
+        Delete ``build/lambda/layer/`` and recreate the directory structure.
         """
         self.log_sub_header("Step 2.1 - Setup Build Directory")
         dir = self.path_layout.dir_build_lambda_layer
@@ -117,7 +88,7 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
 
     def step_2_2_prepare_uv_stuff(self):
         """
-        Copy UV project files (pyproject.toml and uv.lock) to build directory.
+        Copy ``pyproject.toml`` and ``uv.lock`` to ``build/lambda/layer/repo/``.
         """
         self.log_sub_header("Step 2.2 - Prepare UV stuff")
         self.path_layout.copy_pyproject_toml(printer=self.log_detail)
@@ -127,7 +98,7 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
             printer=self.log_detail,
         )
 
-    # --- step_3_execute_build sub-steps
+    # --- Step 3 ---------------------------------------------------------------
     def step_3_execute_build(self):
         self.log_header("Step 3 - Execute Build")
         self.step_3_1_uv_login()
@@ -135,7 +106,7 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
 
     def step_3_1_uv_login(self):
         """
-        Configure UV authentication via environment variables.
+        Set ``UV_INDEX_{NAME}_USERNAME/PASSWORD`` env vars for private repos.
         """
         self.log_sub_header("Step 3.1 - Setting up UV credentials")
         if self.credentials is not None:
@@ -165,7 +136,7 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
             self.log_detail(f"Run: {cmd}")
             subprocess.run(args, cwd=dir_repo, check=True)
 
-    # --- step_4_finalize_artifacts sub-steps
+    # --- Step 4 ---------------------------------------------------------------
     def step_4_finalize_artifacts(self):
         self.log_header("Step 4 - Finalize Artifacts")
         self.step_4_1_move_site_packages_to_python()

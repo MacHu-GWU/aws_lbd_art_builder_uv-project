@@ -1,35 +1,28 @@
 # -*- coding: utf-8 -*-
 
 """
-Container-based Lambda layer build script for uv dependency management.
+Container-side Lambda layer build script (pure stdlib, Python 3.11+).
 
-This script runs inside a Docker container and uses **only Python standard library**
-(3.11+). No third-party packages are needed — just ``uv`` (installed at runtime).
+This script runs **inside** the Docker container launched by
+:class:`~aws_lbd_art_builder_uv.layer.container_builder.UvLambdaLayerContainerBuilder`.
+No third-party packages are needed — only ``uv`` (installed at runtime).
 
-The host mounts ``{project_root}/build/lambda/layer/`` to ``/var/task/``.
+The host mounts ``{project_root}/build/lambda/layer/`` → ``/var/task/``.
 Layout inside the container::
 
     /var/task/                                    ← mount point
     ├── build_lambda_layer_in_container.py        ← this script (renamed copy)
     ├── private-repository-credentials.json       ← optional credentials
-    ├── repo/
-    │   ├── pyproject.toml
-    │   ├── uv.lock
-    │   └── .venv/                                ← created by uv sync
-    └── artifacts/
-        └── python/
-
-**Container-side steps**:
-
-1. Verify ``/var/task/repo`` exists (proves we're inside the container).
-2. Install ``uv`` globally via the official installer.
-3. Load private repository credentials (optional).
-4. Run ``uv sync --frozen --no-dev --no-install-project --link-mode=copy``.
+    └── repo/
+        ├── pyproject.toml
+        ├── uv.lock
+        └── .venv/                                ← created by uv sync
 
 The host-side step 4 moves ``repo/.venv/lib/pythonX.Y/site-packages/``
 into ``artifacts/python/`` after the container exits.
 
-**EXECUTION SAFETY**: This script must NOT be executed on the host machine.
+See ``docs/source/99-Maintainer-Guide/03-Build-Lambda-Layer-using-UV-in-Container``
+for the full architecture guide.
 """
 
 import os

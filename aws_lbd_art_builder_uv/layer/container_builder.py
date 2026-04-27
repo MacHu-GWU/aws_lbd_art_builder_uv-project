@@ -109,7 +109,8 @@ class UvLambdaLayerContainerBuilder(aws_lbd_art_builder_core.layer_api.BaseLambd
 
     def step_2_3_setup_private_repository_credential(self):
         """
-        Dump credentials JSON to ``build/lambda/layer/private-repository-credentials.json``.
+        Dump credentials JSON to ``build/lambda/layer/private-repository-credentials.json``
+        for the container script to read.
         """
         self.log_sub_header("Step 2.3 - Setup Private Repository Credential")
         if not isinstance(self.credentials, aws_lbd_art_builder_core.layer_api.Credentials):
