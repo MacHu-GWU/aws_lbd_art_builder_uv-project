@@ -24,10 +24,20 @@ from ..paths import path_enum
 
 @dataclasses.dataclass(frozen=True)
 class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
+    """
+    Build a Lambda layer using uv on the local machine.
+
+    Uses ``uv sync --frozen`` with lock files for reproducible builds,
+    environment variable authentication, development dependency exclusion,
+    and copy-based linking for Lambda compatibility.
+    """
+
+    # fmt: off
     path_pyproject_toml: Path = dataclasses.field(default=REQ)
     credentials: aws_lbd_art_builder_core.layer_api.Credentials | None = dataclasses.field(default=None)
     skip_prompt: bool = dataclasses.field(default=False)
     path_bin_uv: Path | None = dataclasses.field(default=None)
+    # fmt: on
 
     @cached_property
     def path_layout(self) -> aws_lbd_art_builder_core.layer_api.LayerPathLayout:
@@ -49,8 +59,8 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
         self.log_header("Start local Lambda layer build workflow")
         self.step_1_preflight_check()
         self.step_2_prepare_environment()
-        # self.step_3_execute_build()
-        # self.step_4_finalize_artifacts()
+        self.step_3_execute_build()
+        self.step_4_finalize_artifacts()
 
     # --- step_1_preflight_check sub-steps
     def step_1_preflight_check(self):
@@ -64,11 +74,13 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
         """
         Display build configuration and paths.
         """
+        # fmt: off
         self.log_sub_header("Step 1.1 - Print Build Info")
         self.log_detail(f"path_pyproject_toml = {self.path_pyproject_toml}")
         self.log_detail(f"dir_repo            = {self.path_layout.dir_repo}")
         self.log_detail(f"dir_build_layer     = {self.path_layout.dir_build_lambda_layer}")
         self.log_detail(f"path_bin_uv         = {self.path_bin_uv}")
+        # fmt: on
 
     # --- step_2_prepare_environment sub-steps
     def step_2_prepare_environment(self):
