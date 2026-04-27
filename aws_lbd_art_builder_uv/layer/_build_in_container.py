@@ -7,6 +7,12 @@ This script runs **inside** the Docker container launched by
 :class:`~aws_lbd_art_builder_uv.layer.container_builder.UvLambdaLayerContainerBuilder`.
 No third-party packages are needed — only ``uv`` (installed at runtime).
 
+**Why pure stdlib?** This script is copied into a bare AWS SAM Docker image
+that has nothing pre-installed except Python itself.  If we imported any
+third-party library here, we would have to install it inside the container
+first, adding complexity and build time.  Keeping this script stdlib-only
+means the only external tool we need to fetch is ``uv``.
+
 The host mounts ``{project_root}/build/lambda/layer/`` → ``/var/task/``.
 Layout inside the container::
 
@@ -80,6 +86,14 @@ def main():  # pragma: no cover
 
     # --------------------------------------------------------------------------
     # Step 2 — Install uv
+    #
+    # Why install uv at runtime via curl instead of pre-baking it into the
+    # Docker image?  Because we use the official AWS SAM base image directly
+    # (e.g. public.ecr.aws/sam/build-python3.12) to guarantee binary
+    # compatibility with the real Lambda runtime.  Building a custom image
+    # that bundles uv would add a maintenance burden (rebuild on every SAM
+    # image update) and defeat the purpose of using the official image.
+    # The curl install takes only a few seconds and always gets the latest uv.
     # --------------------------------------------------------------------------
     _log_sub_header("Container Step 2 - Install uv")
     st = datetime.now()
@@ -95,6 +109,12 @@ def main():  # pragma: no cover
 
     # --------------------------------------------------------------------------
     # Step 3 — Setup private repository credentials (optional)
+    #
+    # Credentials are set up inside the container (not passed via docker env
+    # vars) because sensitive tokens should not appear in ``docker run``
+    # command lines, which are visible in process listings.  Instead, the
+    # host dumps a JSON file into the bind-mounted directory, and this
+    # script reads it.
     # --------------------------------------------------------------------------
     _log_sub_header("Container Step 3 - Setup Credentials")
     if path_credentials.exists():
@@ -103,6 +123,10 @@ def main():  # pragma: no cover
         index_name = cred["index_name"]
         username = cred["username"]
         password = cred["password"]
+        # uv expects env vars in the form UV_INDEX_{NAME}_USERNAME where
+        # {NAME} is the index name uppercased with hyphens replaced by
+        # underscores.  This is the uv convention for per-index auth.
+        # See: https://docs.astral.sh/uv/configuration/indexes/
         upper_name = index_name.upper().replace("-", "_")
         key_user = f"UV_INDEX_{upper_name}_USERNAME"
         key_pass = f"UV_INDEX_{upper_name}_PASSWORD"
@@ -119,6 +143,19 @@ def main():  # pragma: no cover
     # --------------------------------------------------------------------------
     _log_sub_header("Container Step 4 - Run 'uv sync'")
     st = datetime.now()
+    # Flag rationale:
+    #   --frozen        : use the exact versions from uv.lock without
+    #                     re-resolving, ensuring reproducible builds.
+    #   --no-dev        : exclude dev dependencies (pytest, sphinx, etc.)
+    #                     that have no place in a Lambda layer.
+    #   --no-install-project : skip installing the project package itself;
+    #                     the Lambda layer only needs the *dependencies*.
+    #                     The project code is deployed separately as the
+    #                     Lambda function handler.
+    #   --link-mode=copy : copy files instead of symlinking. Lambda layers
+    #                     are zipped and uploaded — symlinks would break
+    #                     because the link targets don't exist in the
+    #                     Lambda execution environment.
     subprocess.run(
         [
             str(path_bin_uv),

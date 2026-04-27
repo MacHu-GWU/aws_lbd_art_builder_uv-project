@@ -30,6 +30,11 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
     Runs ``uv sync --frozen --no-dev --no-install-project --link-mode=copy``
     on the host, then moves ``site-packages/`` into ``artifacts/python/``.
 
+    The local builder does not require ``py_ver_major`` / ``py_ver_minor``
+    because it always uses the host's current Python — there is no way to
+    target a different Python version without a container.  The container
+    builder requires them to select the correct AWS SAM base image.
+
     .. note::
 
        Local builds produce host-native binaries.  For packages with C
@@ -40,6 +45,10 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
     path_pyproject_toml: Path = dataclasses.field(default=REQ)
     credentials: aws_lbd_art_builder_core.layer_api.Credentials | None = dataclasses.field(default=None)
     skip_prompt: bool = dataclasses.field(default=False)
+    # path_bin_uv defaults to None, which means "use whatever 'uv' is on
+    # PATH".  This covers the common case where uv is globally installed.
+    # An explicit path is only needed when uv lives in a non-standard
+    # location (e.g. a CI environment with a custom tool cache).
     path_bin_uv: Path | None = dataclasses.field(default=None)
     # fmt: on
 
@@ -100,6 +109,18 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
 
     # --- Step 3 ---------------------------------------------------------------
     def step_3_execute_build(self):
+        """
+        Credentials are set up here in Step 3 (right before ``uv sync``)
+        rather than in Step 2, because ``uv_login()`` sets process-level
+        environment variables.  Doing it in Step 2 would pollute the env
+        during directory setup, and if Step 2 failed, the env vars would
+        be left dangling.  Keeping credential setup adjacent to the command
+        that needs them minimizes the window of exposure.
+
+        (In the container builder, credentials are written to a JSON file
+        in Step 2 because the container is a separate process — writing a
+        file is a prepare action, not an execute action.)
+        """
         self.log_header("Step 3 - Execute Build")
         self.step_3_1_uv_login()
         self.step_3_2_run_uv_sync()

@@ -13,6 +13,15 @@ import shutil
 from pathlib import Path
 
 dir_project_root = Path(__file__).parent
+
+# Why copy the package source into the example project?
+# These examples are standalone projects with their own pyproject.toml and
+# uv.lock.  They can't "pip install" the parent package because the whole
+# point is to test the *development* version of the builder code, not a
+# released version.  Copying the source makes the latest code importable
+# from this project's namespace without modifying sys.path or installing
+# in editable mode (which would require the example project to declare
+# the dependency).  The rmtree + copytree ensures a clean, up-to-date copy.
 package_name = "aws_lbd_art_builder_uv"
 dir_source = dir_project_root.parent.parent / package_name
 dir_target = dir_project_root / package_name

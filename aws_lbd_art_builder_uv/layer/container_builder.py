@@ -34,6 +34,9 @@ class UvLambdaLayerContainerBuilder(
 
     # fmt: off
     path_script: Path = dataclasses.field(default=path_enum.path_build_in_container_script)
+    # credentials is optional because most projects only need public PyPI.
+    # When private repositories are needed, the caller passes a Credentials
+    # object that gets serialized to JSON and read inside the container.
     credentials: aws_lbd_art_builder_core.layer_api.Credentials | None = dataclasses.field(default=None)
     skip_prompt: bool = dataclasses.field(default=False)
     # fmt: on
@@ -63,6 +66,15 @@ class UvLambdaLayerContainerBuilder(
         # fmt: on
 
     def step_1_2_check(self):
+        """
+        Check that ``uv.lock`` exists before starting the build.
+
+        Container builds are slow and resource-heavy (pulling Docker images,
+        spinning up a container).  Failing early on a missing lock file
+        saves minutes of wasted time.  The local builder skips this check
+        because local builds are fast enough that discovering the missing
+        lock file at ``uv sync`` time is acceptable.
+        """
         self.log_sub_header("Step 1.2 - Check")
         path_uv_lock = self.path_layout.dir_project_root / "uv.lock"
         self.log_detail(f"Check if '{path_uv_lock}' exists ...")

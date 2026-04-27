@@ -33,6 +33,16 @@ def _strip_version_spec(dep: str) -> str:
 def _find_dist_info(dir_python: Path, name: str) -> Path | None:
     """
     Find the ``.dist-info`` directory for *name* inside *dir_python*.
+
+    Why the regex approach instead of a simple ``rsplit("-", 1)``?
+    dist-info directories are named ``{name}-{version}.dist-info``.
+    A naive split on the last hyphen breaks for packages whose names
+    contain digits that look like version numbers (e.g.
+    ``zipp-3.20.2.dist-info`` — ``rsplit("-", 1)`` would give
+    ``"zipp-3.20"`` as the name).  The regex ``^(.+?)-\\d`` matches the
+    *first* hyphen followed by a digit, which is where the version
+    segment always starts.  This correctly extracts ``"zipp"`` from
+    ``"zipp-3.20.2"``.
     """
     norm = _normalize(name)
     for p in dir_python.iterdir():
@@ -139,7 +149,10 @@ def validate_artifacts(
 
     ok = len(errors) == 0
 
-    # Print summary
+    # Print summary directly to stdout so build scripts show human-readable
+    # output without requiring a logging framework.  The structured dict is
+    # returned for programmatic use; the print block is for operators watching
+    # the terminal during a build.
     print("")
     print("+----- Validate Artifacts")
     print("|")
@@ -168,5 +181,13 @@ def validate_artifacts(
             print(f"|    - {err}")
     print("")
 
+    # Why assert instead of raising a custom exception?  This function is
+    # designed to be called at the end of build scripts and integration tests.
+    # An AssertionError is the natural choice: pytest displays it with a clear
+    # message, and in scripts it crashes immediately with a traceback.  A custom
+    # exception would need to be imported and caught — unnecessary ceremony
+    # for a "build succeeded or didn't" check.  The return value is still
+    # available for callers that want to inspect individual package results
+    # programmatically (the assert fires first if anything is wrong).
     assert ok, f"Artifact validation failed: {errors}"
     return {"ok": ok, "packages": packages, "errors": errors}
