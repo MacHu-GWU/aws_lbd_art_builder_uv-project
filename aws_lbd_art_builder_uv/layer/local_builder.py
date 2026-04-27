@@ -46,7 +46,7 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
         Runs all four build phases in order. Override individual steps
         or call steps directly for custom workflows.
         """
-        self.log("--- Start local Lambda layer build workflow")
+        self.log_header("Start local Lambda layer build workflow")
         self.step_1_preflight_check()
         self.step_2_prepare_environment()
         # self.step_3_execute_build()
@@ -57,28 +57,25 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
         """
         Perform read-only validation of build environment and project configuration.
         """
-        self.log("--- Step 1 - Preflight Check")
+        self.log_header("Step 1 - Preflight Check")
         self.step_1_1_print_info()
 
     def step_1_1_print_info(self):
         """
         Display build configuration and paths.
         """
-        self.log("--- Step 1.1 - Print Build Info")
-        p = self.path_pyproject_toml
-        self.log(f"path_pyproject_toml = {p}")
-        p = self.path_layout.dir_repo
-        self.log(f"dir_repo = {p}")
-        p = self.path_layout.dir_build_lambda_layer
-        self.log(f"dir_build_lambda_layer = {p}")
-        self.log(f"path_bin_uv = {self.path_bin_uv}")
+        self.log_sub_header("Step 1.1 - Print Build Info")
+        self.log_detail(f"path_pyproject_toml = {self.path_pyproject_toml}")
+        self.log_detail(f"dir_repo            = {self.path_layout.dir_repo}")
+        self.log_detail(f"dir_build_layer     = {self.path_layout.dir_build_lambda_layer}")
+        self.log_detail(f"path_bin_uv         = {self.path_bin_uv}")
 
     # --- step_2_prepare_environment sub-steps
     def step_2_prepare_environment(self):
         """
         Set up necessary prerequisites for the build process.
         """
-        self.log("--- Step 2 - Prepare Environment")
+        self.log_header("Step 2 - Prepare Environment")
         self.step_2_1_setup_build_dir()
         self.step_2_2_prepare_uv_stuff()
 
@@ -89,9 +86,9 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
         Ensures a clean slate for layer creation by removing previous artifacts
         and establishing the required directory structure.
         """
-        self.log("--- Step 2.1 - Setup Build Directory")
+        self.log_sub_header("Step 2.1 - Setup Build Directory")
         dir = self.path_layout.dir_build_lambda_layer
-        self.log(f"--- Clean existing build directory: {dir}")
+        self.log_detail(f"Clean existing build directory: {dir}")
         self.path_layout.clean(skip_prompt=self.skip_prompt)
         self.path_layout.mkdirs()
 
@@ -99,16 +96,17 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
         """
         Copy UV project files (pyproject.toml and uv.lock) to build directory.
         """
-        self.log("--- Step 2.2 - Prepare UV stuff")
-        self.path_layout.copy_pyproject_toml(printer=self.log)
+        self.log_sub_header("Step 2.2 - Prepare UV stuff")
+        self.path_layout.copy_pyproject_toml(printer=self.log_detail)
         self.path_layout.copy_file(
             p_src=self.path_layout.dir_project_root / "uv.lock",
             p_dst=self.path_layout.dir_repo / "uv.lock",
-            printer=self.log,
+            printer=self.log_detail,
         )
 
     # --- step_3_execute_build sub-steps
     def step_3_execute_build(self):
+        self.log_header("Step 3 - Execute Build")
         self.step_3_1_uv_login()
         self.step_3_2_run_uv_sync()
 
@@ -116,19 +114,19 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
         """
         Configure UV authentication via environment variables.
         """
-        self.log("--- Step 3.1 - Setting up UV credentials")
+        self.log_sub_header("Step 3.1 - Setting up UV credentials")
         if self.credentials is not None:
             key_user, key_pass = self.credentials.uv_login()
-            self.log(f"Set environment variable {key_user}")
-            self.log(f"Set environment variable {key_pass}")
+            self.log_detail(f"Set environment variable {key_user}")
+            self.log_detail(f"Set environment variable {key_pass}")
         else:
-            self.log("No UV credentials provided, skipping UV login step")
+            self.log_detail("No UV credentials provided, skipping UV login step")
 
     def step_3_2_run_uv_sync(self):
         """
         Execute ``uv sync --frozen --no-dev --no-install-project --link-mode=copy``.
         """
-        self.log("--- Step 3.2 - Run 'uv sync'")
+        self.log_sub_header("Step 3.2 - Run 'uv sync'")
         path_bin_uv = str(self.path_bin_uv) if self.path_bin_uv else "uv"
         dir_repo = self.path_layout.dir_repo
         with aws_lbd_art_builder_core.temp_cwd(dir_repo):
@@ -140,16 +138,21 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
                 "--no-install-project",
                 "--link-mode=copy",
             ]
+            cmd = " ".join(args)
+            self.log_detail(f"Run: {cmd}")
             subprocess.run(args, cwd=dir_repo, check=True)
 
     # --- step_4_finalize_artifacts sub-steps
     def step_4_finalize_artifacts(self):
-        self.log("--- Step 4 - Finalize Artifacts")
+        self.log_header("Step 4 - Finalize Artifacts")
         self.step_4_1_move_site_packages_to_python()
 
     def step_4_1_move_site_packages_to_python(self):
-        self.log("--- Step 4.1 - Move site-packages to python/")
+        self.log_sub_header("Step 4.1 - Move site-packages to python/")
+        dir_source = self.path_layout.dir_build_lambda_layer_repo_venv_site_packages
+        dir_target = self.path_layout.dir_python
+        self.log_detail(f"Move '{dir_source}' to '{dir_target}' ")
         aws_lbd_art_builder_core.layer_api.move_to_dir_python(
-            dir_site_packages=self.path_layout.dir_build_lambda_layer_repo_venv_site_packages,
-            dir_python=self.path_layout.dir_python,
+            dir_site_packages=dir_source,
+            dir_python=dir_target,
         )
