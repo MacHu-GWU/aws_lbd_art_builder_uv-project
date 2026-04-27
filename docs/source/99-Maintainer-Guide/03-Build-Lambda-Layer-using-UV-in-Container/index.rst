@@ -1,3 +1,5 @@
+.. _Build-Lambda-Layer-using-UV-in-Container:
+
 Build Lambda Layer using UV in Container
 ==============================================================================
 
@@ -6,7 +8,7 @@ Why Build in a Container?
 ------------------------------------------------------------------------------
 When your Lambda function depends on packages with C extensions (e.g. ``numpy``, ``pandas``, ``lxml``), building on macOS or a non-Amazon-Linux host produces binaries that are **incompatible** with the Lambda runtime. A containerized build solves this by running ``uv sync`` inside an official AWS SAM image that matches the Lambda execution environment exactly.
 
-This guide walks through how ``UvLambdaLayerContainerBuilder`` orchestrates a reproducible, container-based Lambda layer build using **uv** as the package manager.
+This guide walks through how :class:`~aws_lbd_art_builder_uv.layer.container_builder.UvLambdaLayerContainerBuilder` orchestrates a reproducible, container-based Lambda layer build using **uv** as the package manager.
 
 
 Prerequisites
