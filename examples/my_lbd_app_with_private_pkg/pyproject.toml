@@ -1,17 +1,38 @@
 [project]
 name = "my_lbd_app_with_private_pkg"
 version = "0.1.1"
-requires-python = ">=3.11"
+requires-python = "==3.12.*"
 dependencies = [
-    "attrs",
     "boto3",
-    "my_private_lib",
+    "esc-dummy-lib>=0.1.1,<1.0.0",
+]
+
+[project.optional-dependencies]
+aws_lbd_art_builder_core = [
+    "aws-lbd-art-builder-core[upload,publish]>=0.1.3,<1.0.0",
+]
+
+[[tool.uv.index]]
+name = "esc"
+url = "https://esc-982534387049.d.codeartifact.us-east-1.amazonaws.com/pypi/esc-python/simple/"
+authenticate = "always"
+explicit = true
+
+[tool.uv.sources]
+esc-dummy-lib = { index = "esc" }
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = [
+    "my_lbd_app_with_private_pkg*"
+]
+exclude = [
+]
+
+[tool.setuptools.package-data]
+"my_lbd_app_with_private_pkg" = [
 ]
 
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.backends._legacy:_Backend"
-
-[[tool.uv.index]]
-name = "private"
-url = "https://private.pypi.example.com/simple/"
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
