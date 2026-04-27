@@ -4,6 +4,7 @@
 # from .builder import UvLambdaLayerLocalBuilder
 # from .builder import UvLambdaLayerContainerBuilder
 from .local_builder import UvLambdaLayerLocalBuilder
+from .container_builder import UvLambdaLayerContainerBuilder
 
 # Re-export from core for end-user convenience
 from aws_lbd_art_builder_core.layer.api import Credentials
