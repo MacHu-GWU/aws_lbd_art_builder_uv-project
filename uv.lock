@@ -98,6 +98,7 @@ publish = [
     { name = "aws-lbd-art-builder-core", extra = ["publish"] },
 ]
 test = [
+    { name = "aws-lbd-art-builder-core", extra = ["publish", "upload"] },
     { name = "moto" },
     { name = "pytest" },
     { name = "pytest-cov" },
@@ -111,6 +112,7 @@ requires-dist = [
     { name = "aws-lbd-art-builder-core", specifier = ">=0.1.4,<1.0.0" },
     { name = "aws-lbd-art-builder-core", extras = ["publish"], marker = "extra == 'publish'" },
     { name = "aws-lbd-art-builder-core", extras = ["upload"], marker = "extra == 'upload'" },
+    { name = "aws-lbd-art-builder-core", extras = ["upload", "publish"], marker = "extra == 'test'" },
     { name = "docfly", marker = "extra == 'doc'", specifier = "==3.0.3" },
     { name = "furo", marker = "extra == 'doc'", specifier = "==2024.8.6" },
     { name = "httpx", marker = "extra == 'mise'", specifier = ">=0.28.0,<1.0.0" },
