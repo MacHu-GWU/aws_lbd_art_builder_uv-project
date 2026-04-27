@@ -50,7 +50,21 @@ Welcome to ``aws_lbd_art_builder_uv`` Documentation
 .. image:: https://aws-lbd-art-builder-uv.readthedocs.io/en/latest/_static/aws_lbd_art_builder_uv-logo.png
     :target: https://aws-lbd-art-builder-uv.readthedocs.io/en/latest/
 
-Documentation for ``aws_lbd_art_builder_uv``.
+``aws_lbd_art_builder_uv`` is the **uv** backend for `aws_lbd_art_builder_core <https://github.com/MacHu-GWU/aws_lbd_art_builder_core-project>`_, providing automated AWS Lambda layer builds using `uv <https://docs.astral.sh/uv/>`_ as the package manager.
+
+It offers two builders:
+
+- **UvLambdaLayerLocalBuilder** — runs ``uv sync`` directly on the host machine. Fast, no Docker required. Best for pure-Python dependencies.
+- **UvLambdaLayerContainerBuilder** — runs ``uv sync`` inside an `AWS SAM Docker image <https://gallery.ecr.aws/sam>`_ to produce Linux-compatible binaries. Required when your layer includes packages with C extensions (e.g. ``numpy``, ``pandas``).
+
+Both builders follow a 4-step workflow: **Preflight Check → Prepare Environment → Execute Build → Finalize Artifacts**. The output is a ``artifacts/python/`` directory ready to be zipped and published as a Lambda layer. Combine with ``aws_lbd_art_builder_core``'s package, upload, and publish steps for a complete deployment pipeline.
+
+Features:
+
+- Reproducible builds via ``uv sync --frozen`` with lock files
+- Private PyPI index support (e.g. AWS CodeArtifact) via credential injection
+- Artifact validation — verify installed packages match ``pyproject.toml`` dependencies
+- Pure-stdlib container script — no pip install needed inside the container
 
 
 .. _install:
