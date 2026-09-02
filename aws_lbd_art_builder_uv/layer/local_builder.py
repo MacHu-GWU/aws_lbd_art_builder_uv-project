@@ -20,6 +20,7 @@ from func_args.api import REQ
 import aws_lbd_art_builder_core.api as aws_lbd_art_builder_core
 
 from ..paths import path_enum
+from .uv_sync_options import UvSyncOptions
 
 
 @dataclasses.dataclass(frozen=True)
@@ -27,8 +28,9 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
     """
     Build a Lambda layer using uv on the local machine.
 
-    Runs ``uv sync --frozen --no-dev --no-install-project --link-mode=copy``
-    on the host, then moves ``site-packages/`` into ``artifacts/python/``.
+    Runs ``uv sync --frozen --no-install-project --link-mode=copy`` on the
+    host, then moves ``site-packages/`` into ``artifacts/python/``.  Extras and
+    dependency groups are selected via :attr:`uv_sync_options`.
 
     The local builder does not require ``py_ver_major`` / ``py_ver_minor``
     because it always uses the host's current Python — there is no way to
@@ -50,6 +52,10 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
     # An explicit path is only needed when uv lives in a non-standard
     # location (e.g. a CI environment with a custom tool cache).
     path_bin_uv: Path | None = dataclasses.field(default=None)
+    # uv_sync_options decides *which* dependencies land in the layer (extras,
+    # dependency groups).  The default installs only '[project] dependencies',
+    # which keeps the layer minimal; pass UvSyncOptions(extras=[...]) to opt in.
+    uv_sync_options: UvSyncOptions = dataclasses.field(default_factory=UvSyncOptions)
     # fmt: on
 
     @cached_property
@@ -77,6 +83,7 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
         self.log_detail(f"dir_repo            = {self.path_layout.dir_repo}")
         self.log_detail(f"dir_build_layer     = {self.path_layout.dir_build_lambda_layer}")
         self.log_detail(f"path_bin_uv         = {self.path_bin_uv}")
+        self.log_detail(f"uv_sync_options     = {self.uv_sync_options.to_args()}")
         # fmt: on
 
     # --- Step 2 ---------------------------------------------------------------
@@ -139,7 +146,13 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
 
     def step_3_2_run_uv_sync(self):
         """
-        Execute ``uv sync --frozen --no-dev --no-install-project --link-mode=copy``.
+        Execute ``uv sync --frozen --no-install-project --link-mode=copy``
+        plus the dependency-selection flags from :attr:`uv_sync_options`.
+
+        The three flags hardcoded here are structural: they are what makes the
+        output a *layer* rather than a dev environment.  Everything that varies
+        per project -- extras, dependency groups -- comes from
+        :attr:`uv_sync_options` so the caller can control it.
         """
         self.log_sub_header("Step 3.2 - Run 'uv sync'")
         path_bin_uv = str(self.path_bin_uv) if self.path_bin_uv else "uv"
@@ -149,10 +162,10 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
                 path_bin_uv,
                 "sync",
                 "--frozen",
-                "--no-dev",
                 "--no-install-project",
                 "--link-mode=copy",
             ]
+            args.extend(self.uv_sync_options.to_args())
             cmd = " ".join(args)
             self.log_detail(f"Run: {cmd}")
             subprocess.run(args, cwd=dir_repo, check=True)

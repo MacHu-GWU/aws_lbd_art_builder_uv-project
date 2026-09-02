@@ -5,6 +5,7 @@
 # from .builder import UvLambdaLayerContainerBuilder
 from .local_builder import UvLambdaLayerLocalBuilder
 from .container_builder import UvLambdaLayerContainerBuilder
+from .uv_sync_options import UvSyncOptions
 from .validate import validate_artifacts
 
 # Re-export from core for end-user convenience

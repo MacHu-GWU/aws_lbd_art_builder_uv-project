@@ -52,6 +52,16 @@ def _log(msg: str):  # pragma: no cover
 
 
 def parse_args():  # pragma: no cover
+    """
+    Parse this script's own options and collect the rest for ``uv sync``.
+
+    Anything this script does not recognize is forwarded verbatim to
+    ``uv sync`` (``--extra aws``, ``--group prod``, ...).  Forwarding instead
+    of re-declaring every uv flag here keeps the host-side
+    :class:`~aws_lbd_art_builder_uv.layer.uv_sync_options.UvSyncOptions` the
+    single place that knows uv's CLI surface -- this script never needs an
+    update when uv grows a new selection flag.
+    """
     parser = argparse.ArgumentParser(
         description="Build Lambda layer using uv inside a Docker container.",
     )
@@ -60,11 +70,11 @@ def parse_args():  # pragma: no cover
         default="/var/task",
         help="The mount point inside the container. Default: /var/task",
     )
-    return parser.parse_args()
+    return parser.parse_known_args()
 
 
 def main():  # pragma: no cover
-    args = parse_args()
+    args, uv_sync_args = parse_args()
     dir_task = Path(args.dir_task)
 
     # --- Derived paths ---------------------------------------------------------
@@ -146,8 +156,6 @@ def main():  # pragma: no cover
     # Flag rationale:
     #   --frozen        : use the exact versions from uv.lock without
     #                     re-resolving, ensuring reproducible builds.
-    #   --no-dev        : exclude dev dependencies (pytest, sphinx, etc.)
-    #                     that have no place in a Lambda layer.
     #   --no-install-project : skip installing the project package itself;
     #                     the Lambda layer only needs the *dependencies*.
     #                     The project code is deployed separately as the
@@ -156,15 +164,21 @@ def main():  # pragma: no cover
     #                     are zipped and uploaded — symlinks would break
     #                     because the link targets don't exist in the
     #                     Lambda execution environment.
+    #
+    # The dependency-selection flags (--no-dev, --extra, --group, ...) are not
+    # hardcoded here: they come from the host as forwarded arguments, so the
+    # caller decides which extras the layer carries.
+    uv_sync_command = [
+        str(path_bin_uv),
+        "sync",
+        "--frozen",
+        "--no-install-project",
+        "--link-mode=copy",
+        *uv_sync_args,
+    ]
+    _log(f"Run: {' '.join(uv_sync_command)}")
     subprocess.run(
-        [
-            str(path_bin_uv),
-            "sync",
-            "--frozen",
-            "--no-dev",
-            "--no-install-project",
-            "--link-mode=copy",
-        ],
+        uv_sync_command,
         cwd=str(dir_repo),
         check=True,
     )

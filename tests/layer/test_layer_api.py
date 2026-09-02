@@ -17,6 +17,7 @@ def test_layer_api_imports():
     _ = api.LambdaLayerVersionPublisher
     _ = api.LayerDeployment
     _ = api.validate_artifacts
+    _ = api.UvSyncOptions
 
 
 if __name__ == "__main__":

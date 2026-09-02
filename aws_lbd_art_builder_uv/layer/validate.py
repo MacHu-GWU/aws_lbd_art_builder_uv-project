@@ -101,6 +101,8 @@ def validate_artifacts(
     dir_python: Path,
     path_pyproject_toml: Path,
     check_linux: bool = False,
+    extras: list[str] | None = None,
+    all_extras: bool = False,
 ) -> dict:
     """
     Validate that ``artifacts/python/`` contains the expected dependencies.
@@ -109,6 +111,13 @@ def validate_artifacts(
     :param path_pyproject_toml: Path to the project's ``pyproject.toml``.
     :param check_linux: If ``True``, also verify that compiled extensions
         target Linux (useful for container builds).
+    :param extras: Extra names the layer was built with.  Their dependencies
+        from ``[project.optional-dependencies]`` are checked alongside the
+        required ones.  Pass the same extras given to
+        :class:`~aws_lbd_art_builder_uv.layer.uv_sync_options.UvSyncOptions`,
+        otherwise the packages they pulled in go unchecked.
+    :param all_extras: If ``True``, check every declared extra -- the
+        counterpart of ``UvSyncOptions(all_extras=True)``.
     :return: A dict with keys ``"ok"`` (bool), ``"packages"`` (list of per-package
         results), and ``"errors"`` (list of error messages).
 
@@ -120,8 +129,30 @@ def validate_artifacts(
     with open(path_pyproject_toml, "rb") as f:
         pyproject = tomllib.load(f)
 
-    deps = pyproject.get("project", {}).get("dependencies", [])
-    dep_names = [_strip_version_spec(d) for d in deps]
+    project = pyproject.get("project", {})
+    deps = list(project.get("dependencies", []))
+
+    optional_deps = project.get("optional-dependencies", {})
+    if all_extras:
+        selected_extras = list(optional_deps)
+    else:
+        selected_extras = list(extras or [])
+    for extra in selected_extras:
+        if extra not in optional_deps:
+            raise KeyError(
+                f"Extra '{extra}' is not declared in "
+                f"[project.optional-dependencies] of {path_pyproject_toml}"
+            )
+        deps.extend(optional_deps[extra])
+
+    # An extra may repeat a dependency already required by the project, and
+    # two extras may overlap.  Deduplicate on the *name* so the report lists
+    # each package once, keeping first-seen order for a stable printout.
+    dep_names = []
+    for dep in deps:
+        name = _strip_version_spec(dep)
+        if name not in dep_names:
+            dep_names.append(name)
 
     packages = []
     errors = []

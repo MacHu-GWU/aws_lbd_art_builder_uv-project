@@ -17,6 +17,7 @@ from pathlib import Path
 import aws_lbd_art_builder_core.api as aws_lbd_art_builder_core
 
 from ..paths import path_enum
+from .uv_sync_options import UvSyncOptions
 
 
 @dataclasses.dataclass(frozen=True)
@@ -39,7 +40,23 @@ class UvLambdaLayerContainerBuilder(
     # object that gets serialized to JSON and read inside the container.
     credentials: aws_lbd_art_builder_core.layer_api.Credentials | None = dataclasses.field(default=None)
     skip_prompt: bool = dataclasses.field(default=False)
+    # uv_sync_options decides *which* dependencies land in the layer (extras,
+    # dependency groups).  The default installs only '[project] dependencies',
+    # which keeps the layer minimal; pass UvSyncOptions(extras=[...]) to opt in.
+    uv_sync_options: UvSyncOptions = dataclasses.field(default_factory=UvSyncOptions)
     # fmt: on
+
+    @property
+    def script_args(self) -> list[str]:
+        """
+        Forward the dependency-selection flags to the container-side script.
+
+        These are plain ``uv sync`` flags (``--extra``, ``--group``, ...).  The
+        container script does not interpret them; it appends them verbatim to
+        its own ``uv sync`` invocation, so this package never has to mirror
+        uv's CLI surface in two places.
+        """
+        return self.uv_sync_options.to_args()
 
     def run(self):
         self.step_1_preflight_check()
@@ -63,6 +80,7 @@ class UvLambdaLayerContainerBuilder(
         self.log_detail(f"path_script         = {self.path_script}")
         self.log_detail(f"dir_repo            = {self.path_layout.dir_repo}")
         self.log_detail(f"dir_build_layer     = {self.path_layout.dir_build_lambda_layer}")
+        self.log_detail(f"uv_sync_options     = {self.script_args}")
         # fmt: on
 
     def step_1_2_check(self):
