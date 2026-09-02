@@ -153,25 +153,27 @@ def main():  # pragma: no cover
     # --------------------------------------------------------------------------
     _log_sub_header("Container Step 4 - Run 'uv sync'")
     st = datetime.now()
-    # Flag rationale:
-    #   --frozen        : use the exact versions from uv.lock without
-    #                     re-resolving, ensuring reproducible builds.
-    #   --no-install-project : skip installing the project package itself;
-    #                     the Lambda layer only needs the *dependencies*.
-    #                     The project code is deployed separately as the
-    #                     Lambda function handler.
+    # The two flags below are a literal copy of ``STRUCTURAL_ARGS`` in
+    # uv_sync_options.py — this script must stay pure-stdlib and import-free,
+    # so it cannot share the constant.  A test parses this literal and compares
+    # it against the constant, so the two cannot drift apart.  They are the
+    # flags a caller is not allowed to change, because either one, set wrong,
+    # produces an artifact that installs cleanly and then fails on Lambda:
+    #   --no-install-project : only pyproject.toml + uv.lock are mounted here,
+    #                     with no source tree, so installing the project would
+    #                     yield an editable pointer into this build directory —
+    #                     an unimportable package plus a .pth referencing a
+    #                     path that does not exist on Lambda.
     #   --link-mode=copy : copy files instead of symlinking. Lambda layers
     #                     are zipped and uploaded — symlinks would break
     #                     because the link targets don't exist in the
     #                     Lambda execution environment.
     #
-    # The dependency-selection flags (--no-dev, --extra, --group, ...) are not
-    # hardcoded here: they come from the host as forwarded arguments, so the
-    # caller decides which extras the layer carries.
+    # Every other flag (--frozen, --no-dev, --extra, --group, ...) comes from
+    # the host as forwarded arguments, so the caller decides what goes in.
     uv_sync_command = [
         str(path_bin_uv),
         "sync",
-        "--frozen",
         "--no-install-project",
         "--link-mode=copy",
         *uv_sync_args,

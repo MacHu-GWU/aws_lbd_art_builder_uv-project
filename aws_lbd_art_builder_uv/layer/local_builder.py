@@ -20,6 +20,7 @@ from func_args.api import REQ
 import aws_lbd_art_builder_core.api as aws_lbd_art_builder_core
 
 from ..paths import path_enum
+from .uv_sync_options import STRUCTURAL_ARGS
 from .uv_sync_options import UvSyncOptions
 
 
@@ -28,9 +29,10 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
     """
     Build a Lambda layer using uv on the local machine.
 
-    Runs ``uv sync --frozen --no-install-project --link-mode=copy`` on the
-    host, then moves ``site-packages/`` into ``artifacts/python/``.  Extras and
-    dependency groups are selected via :attr:`uv_sync_options`.
+    Runs ``uv sync`` with
+    :data:`~aws_lbd_art_builder_uv.layer.uv_sync_options.STRUCTURAL_ARGS` on the
+    host, then moves ``site-packages/`` into ``artifacts/python/``.  Extras,
+    dependency groups and any other uv flag come from :attr:`uv_sync_options`.
 
     The local builder does not require ``py_ver_major`` / ``py_ver_minor``
     because it always uses the host's current Python — there is no way to
@@ -149,22 +151,17 @@ class UvLambdaLayerLocalBuilder(aws_lbd_art_builder_core.layer_api.BaseLogger):
         Execute ``uv sync --frozen --no-install-project --link-mode=copy``
         plus the dependency-selection flags from :attr:`uv_sync_options`.
 
-        The three flags hardcoded here are structural: they are what makes the
-        output a *layer* rather than a dev environment.  Everything that varies
-        per project -- extras, dependency groups -- comes from
-        :attr:`uv_sync_options` so the caller can control it.
+        :data:`~aws_lbd_art_builder_uv.layer.uv_sync_options.STRUCTURAL_ARGS`
+        is what makes the output a *layer* rather than a dev environment, so it
+        is not negotiable.  Everything else -- extras, dependency groups, and
+        any unmodeled uv flag -- comes from :attr:`uv_sync_options`.
         """
         self.log_sub_header("Step 3.2 - Run 'uv sync'")
         path_bin_uv = str(self.path_bin_uv) if self.path_bin_uv else "uv"
         dir_repo = self.path_layout.dir_repo
         with aws_lbd_art_builder_core.temp_cwd(dir_repo):
-            args = [
-                path_bin_uv,
-                "sync",
-                "--frozen",
-                "--no-install-project",
-                "--link-mode=copy",
-            ]
+            args = [path_bin_uv, "sync"]
+            args.extend(STRUCTURAL_ARGS)
             args.extend(self.uv_sync_options.to_args())
             cmd = " ".join(args)
             self.log_detail(f"Run: {cmd}")

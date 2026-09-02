@@ -5,6 +5,8 @@
 # from .builder import UvLambdaLayerContainerBuilder
 from .local_builder import UvLambdaLayerLocalBuilder
 from .container_builder import UvLambdaLayerContainerBuilder
+from .uv_sync_options import STRUCTURAL_ARGS
+from .uv_sync_options import STRUCTURAL_REASONS
 from .uv_sync_options import UvSyncOptions
 from .validate import validate_artifacts
 
