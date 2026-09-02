@@ -4,15 +4,15 @@ requires-python = "==3.12.*"
 
 [[package]]
 name = "aws-lbd-art-builder-core"
-version = "0.1.4"
+version = "0.1.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "func-args" },
     { name = "soft-deps" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/48/4a/a332b80852b7422237bd05ae00a4c149bc281f36179bdc053dddf71f8281/aws_lbd_art_builder_core-0.1.4.tar.gz", hash = "sha256:fa82616eb09b2fe7926b25f64ef8acc0f0e114c75955ea294b40d7c5f26c07e8", size = 34388, upload-time = "2026-04-27T18:23:52.293Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/10/1b/245f4f38ec51b4b53dbe95a19832791c0f8cc6fb4cd5f0d6af2fa7d1407d/aws_lbd_art_builder_core-0.1.5.tar.gz", hash = "sha256:17960302d90f5783d170059f0ed47f6a3ee05ef9d4d38c83b2280be801669d14", size = 34672, upload-time = "2026-09-02T13:59:27.591Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b0/79/6e4dafa02b3575c8a1782605913658a99efabc14da742b1b237e50050b43/aws_lbd_art_builder_core-0.1.4-py3-none-any.whl", hash = "sha256:d666fdefce77f78176fe9438e19b641d381b56b1bdcc69d22ea2ddb42a61f4b3", size = 39826, upload-time = "2026-04-27T18:23:53.247Z" },
+    { url = "https://files.pythonhosted.org/packages/3d/b4/3fc06fb17060c23a42492bfadc9d2de395b3378b8034654a545d0a16abaf/aws_lbd_art_builder_core-0.1.5-py3-none-any.whl", hash = "sha256:2b7b4ab4c9e31e7c365f245a029667b23ed352d8d4cf828936acfa9c3aaba4ba", size = 40139, upload-time = "2026-09-02T13:59:28.423Z" },
 ]
 
 [package.optional-dependencies]
@@ -311,7 +311,7 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aws-lbd-art-builder-core", extras = ["upload", "publish"], marker = "extra == 'aws-lbd-art-builder-core'", specifier = ">=0.1.4,<1.0.0" },
+    { name = "aws-lbd-art-builder-core", extras = ["upload", "publish"], marker = "extra == 'aws-lbd-art-builder-core'", specifier = ">=0.1.5,<1.0.0" },
     { name = "boto3" },
     { name = "moto", marker = "extra == 'test'", specifier = ">=5.1.10,<6.0.0" },
     { name = "pytest", marker = "extra == 'test'", specifier = ">=8.2.2,<9.0.0" },
