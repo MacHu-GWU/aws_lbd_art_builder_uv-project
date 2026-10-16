@@ -6,8 +6,8 @@ UV-based local Lambda layer builder.
 :class:`UvLambdaLayerLocalBuilder` runs ``uv sync`` directly on the host
 machine to install dependencies into a Lambda-compatible layer structure.
 
-See ``docs/source/99-Maintainer-Guide/03-Build-Lambda-Layer-using-UV-in-Container``
-for the containerized variant's architecture guide.
+See ``.claude/skills/maintain-aws_lbd_art_builder_uv/references/01-build-pipeline.md``
+for the architecture guide.
 """
 
 import subprocess

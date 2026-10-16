@@ -6,7 +6,7 @@ UV-based containerized Lambda layer builder.
 :class:`UvLambdaLayerContainerBuilder` orchestrates a Docker-based build
 that runs ``uv sync`` inside an official AWS SAM image.
 
-See ``docs/source/99-Maintainer-Guide/03-Build-Lambda-Layer-using-UV-in-Container``
+See ``.claude/skills/maintain-aws_lbd_art_builder_uv/references/02-container-build.md``
 for the full architecture guide.
 """
 

@@ -28,6 +28,7 @@ This repo follows the pywf open-source Python library template. **Before creatin
 - Never read `$HOME/home_secret.toml`, and never print the values of `GITHUB_TOKEN`, `CODECOV_TOKEN`, `READTHEDOCS_TOKEN`, or `PYPI_TOKEN`.
 - `mise run publish`, `mise run release`, `mise run update-github-metadata`, and the `setup-*` tasks change external services: run each one only after the user's yes, one step per yes.
 - The changelog is `release-history.rst`. Never edit its `x.y.z (Backlog)` section.
+- Load the `maintain-aws_lbd_art_builder_uv` skill before changing the library code or its tests; it holds how the builders, the container build, and the test split work.
 
 ## Skills
 

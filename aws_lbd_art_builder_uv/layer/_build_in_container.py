@@ -27,7 +27,7 @@ Layout inside the container::
 The host-side step 4 moves ``repo/.venv/lib/pythonX.Y/site-packages/``
 into ``artifacts/python/`` after the container exits.
 
-See ``docs/source/99-Maintainer-Guide/03-Build-Lambda-Layer-using-UV-in-Container``
+See ``.claude/skills/maintain-aws_lbd_art_builder_uv/references/02-container-build.md``
 for the full architecture guide.
 """
 
