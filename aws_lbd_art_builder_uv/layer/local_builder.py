@@ -19,7 +19,6 @@ from func_args.api import REQ
 
 import aws_lbd_art_builder_core.api as aws_lbd_art_builder_core
 
-from ..paths import path_enum
 from .uv_sync_options import STRUCTURAL_ARGS
 from .uv_sync_options import UvSyncOptions
 

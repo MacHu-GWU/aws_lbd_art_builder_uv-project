@@ -3,6 +3,10 @@ aws_lbd_art_builder_uv.egg-info/
 docs/source/**/index.md
 .claude/claude-code-message*
 tmp/
+
+# Optional community Agent Skills (catalog: .claude/skills/pywf-oss-base/assets/community-skills.toml).
+# Each one is git-ignored by default. To commit an installed skill with this repo, delete its line.
+.claude/skills/logo-design/
 examples/*/aws_lbd_art_builder_uv
 
 # Byte-compiled / optimized / DLL files

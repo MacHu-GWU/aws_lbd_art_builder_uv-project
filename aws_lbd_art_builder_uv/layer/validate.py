@@ -172,9 +172,7 @@ def validate_artifacts(
             result["linux"] = linux_compat
 
             if check_linux and linux_compat is False:
-                errors.append(
-                    f"Package '{name}' has non-Linux platform tags: {tags}"
-                )
+                errors.append(f"Package '{name}' has non-Linux platform tags: {tags}")
 
         packages.append(result)
 

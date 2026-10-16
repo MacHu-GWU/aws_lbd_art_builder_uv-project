@@ -9,14 +9,12 @@ Uses synthetic fixture directories — no uv, Docker, or AWS needed.
 import pytest
 from pathlib import Path
 
-from aws_lbd_art_builder_uv.layer.validate import (
-    _normalize,
-    _strip_version_spec,
-    _find_dist_info,
-    _read_wheel_tags,
-    _is_linux_compatible,
-    validate_artifacts,
-)
+from aws_lbd_art_builder_uv.layer.validate import _normalize
+from aws_lbd_art_builder_uv.layer.validate import _strip_version_spec
+from aws_lbd_art_builder_uv.layer.validate import _find_dist_info
+from aws_lbd_art_builder_uv.layer.validate import _read_wheel_tags
+from aws_lbd_art_builder_uv.layer.validate import _is_linux_compatible
+from aws_lbd_art_builder_uv.layer.validate import validate_artifacts
 
 
 # ---------------------------------------------------------------------------
@@ -28,10 +26,7 @@ def _make_dist_info(dir_python: Path, name: str, version: str, tag: str):
     dist_info.mkdir(parents=True, exist_ok=True)
     wheel = dist_info / "WHEEL"
     wheel.write_text(
-        f"Wheel-Version: 1.0\n"
-        f"Generator: test\n"
-        f"Root-Is-Purelib: true\n"
-        f"Tag: {tag}\n"
+        f"Wheel-Version: 1.0\nGenerator: test\nRoot-Is-Purelib: true\nTag: {tag}\n"
     )
     return dist_info
 
@@ -174,9 +169,7 @@ class TestValidateArtifacts:
     def test_check_linux_fail_macos(self, tmp_path):
         dir_python = tmp_path / "python"
         dir_python.mkdir()
-        _make_dist_info(
-            dir_python, "numpy", "1.26.0", "cp312-cp312-macosx_14_0_arm64"
-        )
+        _make_dist_info(dir_python, "numpy", "1.26.0", "cp312-cp312-macosx_14_0_arm64")
         path_toml = _make_pyproject_toml(tmp_path, ["numpy"])
 
         with pytest.raises(AssertionError, match="non-Linux"):

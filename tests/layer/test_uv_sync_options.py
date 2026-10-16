@@ -187,11 +187,7 @@ class TestStructuralArgs:
         """
         tree = ast.parse(inspect.getsource(_build_in_container))
         literals = [
-            [
-                node.value
-                for node in assign.value.elts
-                if isinstance(node, ast.Constant)
-            ]
+            [node.value for node in assign.value.elts if isinstance(node, ast.Constant)]
             for assign in ast.walk(tree)
             if isinstance(assign, ast.Assign)
             and isinstance(assign.value, ast.List)

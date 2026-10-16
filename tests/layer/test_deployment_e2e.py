@@ -9,10 +9,10 @@ Uses a real ``uv sync`` against ``examples/my_lbd_app-project``.
 
 from pathlib import Path
 
-import boto3
 from moto import mock_aws
 from boto_session_manager import BotoSesManager
-from s3pathlib import S3Path, context
+from s3pathlib import S3Path
+from s3pathlib import context
 
 from aws_lbd_art_builder_uv.layer.local_builder import UvLambdaLayerLocalBuilder
 from aws_lbd_art_builder_uv.layer.validate import validate_artifacts

@@ -14,5 +14,6 @@ sub packages and modules
     api <api>
     container_builder <container_builder>
     local_builder <local_builder>
+    uv_sync_options <uv_sync_options>
     validate <validate>
     
