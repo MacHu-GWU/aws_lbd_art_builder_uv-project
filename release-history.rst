@@ -15,7 +15,7 @@ x.y.z (Backlog)
 **Miscellaneous**
 
 
-1.0.0 (2026-10-15)
+1.0.0 (2026-10-16)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Breaking Changes**
 
@@ -32,7 +32,19 @@ x.y.z (Backlog)
 **Miscellaneous**
 
 - The deployment end-to-end test and the example projects now use plain boto3
-  clients and s3pathlib 3.x.
+  clients and s3pathlib 3.x, and the private-package example imports
+  ``BotoSesManager`` from ``boto_session_manager.api`` (2.x).
+- Replaced the Sphinx Maintainer Guide (``docs/source/99-Maintainer-Guide/``)
+  with the ``maintain-aws_lbd_art_builder_uv`` agent skill in
+  ``.claude/skills/``: the build pipeline, the container build, and the test
+  split.
+- Added the ``pypi-aws_lbd_art_builder_uv`` agent skill, a compact reference of
+  this library's public API for coding agents, and vendored the
+  ``pypi-aws_lbd_art_builder_core``, ``pypi-s3pathlib`` and
+  ``pypi-boto_session_manager`` skills it builds on.
+- Modernized the project tooling to the current pywf template: mise tasks,
+  ruff formatting and lint, the ``pywf-oss-*`` agent skills, Sphinx 8, the
+  setuptools 77 build backend, and refreshed dev, test and doc dependencies.
 
 
 0.1.2 (2026-09-02)
