@@ -1,5 +1,5 @@
 {
-    "model": "sonnet",
+    "model": "opus",
     "permissions": {
         "defaultMode": "auto",
         "deny": [
@@ -8,15 +8,12 @@
             "Read(========== Read Section ==========)",
             "Read(========== Write Section ==========)",
             "Edit(.claude/*.md)",
-            "Edit(.claude/TEACHING.md)",
             "Edit(.claude/skills/*/*.md)",
             "Edit(.claude/skills/*/SKILL.md)",
             "Edit(.claude/skills/*/references/*.md)",
             "Edit(.claude/skills/*/scripts/*.py)",
             "Edit(./**/*.md)",
             "Edit(./README.md)",
-            "Edit(./README-cn.md)",
-            "Edit(./TICKET.md)",
             "Edit(./CLAUDE.md)",
             "Edit(aws_lbd_art_builder_uv/**/*.py)",
             "Edit(tests/**/*.py)",
