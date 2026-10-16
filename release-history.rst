@@ -15,6 +15,26 @@ x.y.z (Backlog)
 **Miscellaneous**
 
 
+1.0.0 (2026-10-15)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Breaking Changes**
+
+- Now requires ``aws_lbd_art_builder_core>=1.0.0,<2.0.0`` (was ``>=0.1.5,<1.0.0``).
+  The ``upload`` and ``publish`` extras therefore pull in ``s3pathlib`` 3.x, and
+  every ``s3_client`` argument of core (``upload_layer_zip_to_s3()``,
+  ``LambdaLayerVersionPublisher``, ``LayerDeploymentWorkflow``, ...) only accepts
+  a boto3 S3 client: pass ``bsm.s3_client`` instead of a ``BotoSesManager``.
+  Import ``S3Path`` from ``s3pathlib.api``.
+- ``boto_session_manager`` and ``pathlib_mate`` are no longer installed with the
+  ``upload`` and ``publish`` extras. Add them to your own dependencies if you
+  import them.
+
+**Miscellaneous**
+
+- The deployment end-to-end test and the example projects now use plain boto3
+  clients and s3pathlib 3.x.
+
+
 0.1.2 (2026-09-02)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Features and Improvements**

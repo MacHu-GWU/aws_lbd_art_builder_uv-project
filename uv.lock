@@ -69,15 +69,15 @@ wheels = [
 
 [[package]]
 name = "aws-lbd-art-builder-core"
-version = "0.1.5"
+version = "1.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "func-args" },
     { name = "soft-deps" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/10/1b/245f4f38ec51b4b53dbe95a19832791c0f8cc6fb4cd5f0d6af2fa7d1407d/aws_lbd_art_builder_core-0.1.5.tar.gz", hash = "sha256:17960302d90f5783d170059f0ed47f6a3ee05ef9d4d38c83b2280be801669d14", size = 34672, upload-time = "2026-09-02T13:59:27.591Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/5c/d1/360e5de889e3da2b90e014d66511ddd73c34526a8dc733a5f475fd757d90/aws_lbd_art_builder_core-1.0.0.tar.gz", hash = "sha256:aad45697c4249c918377d72adf540f94ee6ec646d80e375a2df355b40646f016", size = 37196, upload-time = "2026-10-16T03:46:57.475Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3d/b4/3fc06fb17060c23a42492bfadc9d2de395b3378b8034654a545d0a16abaf/aws_lbd_art_builder_core-0.1.5-py3-none-any.whl", hash = "sha256:2b7b4ab4c9e31e7c365f245a029667b23ed352d8d4cf828936acfa9c3aaba4ba", size = 40139, upload-time = "2026-09-02T13:59:28.423Z" },
+    { url = "https://files.pythonhosted.org/packages/98/c3/dd9a313d0dff616b8744ea3da02dc4fbba55e9da79820dc8e1539b8e0eab/aws_lbd_art_builder_core-1.0.0-py3-none-any.whl", hash = "sha256:085607d5f1e862cfbb51f3586789bce5ce5b293f0499f8228b20ec29ad0aaf63", size = 41818, upload-time = "2026-10-16T03:46:58.395Z" },
 ]
 
 [package.optional-dependencies]
@@ -93,7 +93,7 @@ upload = [
 
 [[package]]
 name = "aws-lbd-art-builder-uv"
-version = "0.1.2"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "aws-lbd-art-builder-core" },
@@ -135,7 +135,7 @@ upload = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aws-lbd-art-builder-core", specifier = ">=0.1.5,<1.0.0" },
+    { name = "aws-lbd-art-builder-core", specifier = ">=1.0.0,<2.0.0" },
     { name = "aws-lbd-art-builder-core", extras = ["publish"], marker = "extra == 'publish'" },
     { name = "aws-lbd-art-builder-core", extras = ["upload"], marker = "extra == 'upload'" },
     { name = "aws-lbd-art-builder-core", extras = ["upload", "publish"], marker = "extra == 'test'" },
@@ -196,18 +196,6 @@ wheels = [
 [package.optional-dependencies]
 css = [
     { name = "tinycss2" },
-]
-
-[[package]]
-name = "boto-session-manager"
-version = "1.8.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "boto3" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/67/7d/be013c8b6b8edf2afbc063bc393feac64d107f598f3284d99278a4ffb6ff/boto_session_manager-1.8.1.tar.gz", hash = "sha256:68f8cd1f60ab7e245875caacbc58416830f0c6dc5562ed9cbea6a55db100382f", size = 40374, upload-time = "2025-03-14T19:32:52.79Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/66/fc/b3e3318a8fe99b3b7631ae54faee3294b8e3dcc74daa037010aff305d986/boto_session_manager-1.8.1-py3-none-any.whl", hash = "sha256:ca73b7356cc6af626a9794bc36a44d998312cb4686f5c408d45603cce3e47323", size = 33736, upload-time = "2025-03-14T19:32:51.767Z" },
 ]
 
 [[package]]
@@ -1171,15 +1159,6 @@ wheels = [
 ]
 
 [[package]]
-name = "pathlib-mate"
-version = "1.3.2"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/ff/dd/ee187b2d46bced8deb3b69ebfdb07c74cc622d5ddc1bec208cdc76b23b3a/pathlib_mate-1.3.2.tar.gz", hash = "sha256:8e16efd03016d4dd2ff0dc5dc05db666bebea6c8528aebd471953287644dd3e6", size = 61942, upload-time = "2024-01-22T03:19:16.188Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/5e/0f/6b6342767cb06562f4d67295191cd5c63775c04765766499a70265388db6/pathlib_mate-1.3.2-py3-none-any.whl", hash = "sha256:a4b29e0d38abb14e25a8a292856a04c7f48b2eafe9f7ebf36166dec5a13a0b0d", size = 56988, upload-time = "2024-01-22T03:19:14.192Z" },
-]
-
-[[package]]
 name = "pexpect"
 version = "4.9.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1685,19 +1664,17 @@ wheels = [
 
 [[package]]
 name = "s3pathlib"
-version = "2.3.6"
+version = "3.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "boto-session-manager" },
     { name = "boto3" },
-    { name = "func-args" },
     { name = "iterproxy" },
-    { name = "pathlib-mate" },
     { name = "smart-open" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a3/03/4ff884823f9a2e50a6c88281471ab88a9978badd6d1815400f92b6dab6a7/s3pathlib-2.3.6.tar.gz", hash = "sha256:0f2f5f7e91a05464b699ba0bb851952b330693d3db1332843b4fdc18e5e40290", size = 51873, upload-time = "2025-08-12T17:03:43.187Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ec/0c/08bc840eb92e39139a9f4a641ca6ce42a8792d87227a361c67a4c14b1342/s3pathlib-3.0.0.tar.gz", hash = "sha256:8c1c16742ce911ac7bfde27d7c174a92c0bcd3cbed8765f60a39d6fed12e3aa1", size = 103876, upload-time = "2026-10-13T17:44:35.923Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cc/cd/280c4721892a3f6d153237d22e47348615ba82023d60e7d04219c2e9b26e/s3pathlib-2.3.6-py3-none-any.whl", hash = "sha256:912180ce893a613e28c64841fd7855ab4ce8c68a3a10cc82cfb9faecd60517b6", size = 72677, upload-time = "2025-08-12T17:03:42.171Z" },
+    { url = "https://files.pythonhosted.org/packages/4e/d7/caa5cefc30953851524ec1a23feaeed861a75c058c04056a13cc4760bf27/s3pathlib-3.0.0-py3-none-any.whl", hash = "sha256:809e63003dffcd8a3787a0cab0c7f7d165878d4c92e184a23a2075d9ace46adb", size = 112355, upload-time = "2026-10-13T17:44:34.673Z" },
 ]
 
 [[package]]

@@ -23,4 +23,5 @@ Knowledge that only this repo needs. The conventions shared by every pywf open-s
 ## Related skills
 
 - `pywf-oss-base`: repo-wide conventions, and which `pywf-oss-*` skill does which job (add a module, write tests, write docs, changelog, release).
-- `pypi-boto_session_manager`, `pypi-s3pathlib`: the AWS helpers used by the deployment test and the private-package example.
+- `pypi-aws_lbd_art_builder_core`: the core API (zip, upload, publish) this package builds on.
+- `pypi-s3pathlib`: `S3Path`, used by the deployment test. `pypi-boto_session_manager`: used only by the private-package example.

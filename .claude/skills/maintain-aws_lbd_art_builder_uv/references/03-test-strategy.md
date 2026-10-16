@@ -26,7 +26,7 @@ The code is small, but it shells out to `uv`, launches Docker, authenticates aga
 | `tests/layer/test_uv_sync_options.py` | flag rendering, construction-time conflicts, `extra_args` rejection, `managed_args` completeness, `STRUCTURAL_ARGS` reasons, and the container script's literal copy (via `ast`) | nothing |
 | `tests/layer/test_validate.py` | name normalization, version stripping, `.dist-info` lookup, wheel tags, `validate_artifacts` with synthetic `tmp_path` fixtures | nothing |
 | `tests/layer/test_local_builder_e2e.py` | a real `uv sync` of `examples/my_lbd_app-project`, all four steps of the local builder, then `validate_artifacts` | `uv` |
-| `tests/layer/test_deployment_e2e.py` | build → validate → `create_layer_zip_file` → `upload_layer_zip_to_s3` → `LambdaLayerVersionPublisher` under `@mock_aws`; asserts version 1, ARN format, manifest in S3 | `uv`, the test extra (`moto`, `boto_session_manager`, `s3pathlib`) |
+| `tests/layer/test_deployment_e2e.py` | build → validate → `create_layer_zip_file` → `upload_layer_zip_to_s3` → `LambdaLayerVersionPublisher` under `@mock_aws`; asserts version 1, ARN format, manifest in S3 | `uv`, the test extra (`moto`, `boto3`, `s3pathlib` 3.x); pass plain boto3 clients, never a `BotoSesManager` |
 
 `tests/layer/conftest.py` has a session-scoped autouse fixture, `ensure_example_venv`. Core's `LayerPathLayout.venv_python_version` runs `{project_root}/.venv/bin/python --version` on the **example project's** `.venv` (a known core bug: it should look at the build dir). Locally that `.venv` exists; on CI the fixture creates it with `uv venv --allow-existing`. Remove the fixture only once core is fixed.
 

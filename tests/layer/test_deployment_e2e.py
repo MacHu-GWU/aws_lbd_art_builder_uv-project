@@ -9,10 +9,9 @@ Uses a real ``uv sync`` against ``examples/my_lbd_app-project``.
 
 from pathlib import Path
 
+import boto3
 from moto import mock_aws
-from boto_session_manager import BotoSesManager
-from s3pathlib import S3Path
-from s3pathlib import context
+from s3pathlib.api import S3Path
 
 from aws_lbd_art_builder_uv.layer.local_builder import UvLambdaLayerLocalBuilder
 from aws_lbd_art_builder_uv.layer.validate import validate_artifacts
@@ -33,9 +32,9 @@ class TestDeploymentE2E:
     @mock_aws
     def test_build_package_upload_publish(self):
         # --- Setup mock AWS ---
-        bsm = BotoSesManager(region_name=AWS_REGION)
-        bsm.s3_client.create_bucket(Bucket=S3_BUCKET)
-        context.attach_boto_session(bsm)
+        s3_client = boto3.client("s3", region_name=AWS_REGION)
+        lambda_client = boto3.client("lambda", region_name=AWS_REGION)
+        s3_client.create_bucket(Bucket=S3_BUCKET)
         s3dir_lambda = S3Path(f"s3://{S3_BUCKET}/{S3_PREFIX}").to_dir()
 
         path_pyproject_toml = dir_my_lbd_app / "pyproject.toml"
@@ -70,7 +69,7 @@ class TestDeploymentE2E:
 
         # --- Step 3: Upload ---
         aws_lbd_art_builder_core.layer_api.upload_layer_zip_to_s3(
-            s3_client=bsm,
+            s3_client=s3_client,
             path_pyproject_toml=path_pyproject_toml,
             s3dir_lambda=s3dir_lambda,
             path_manifest=path_manifest,
@@ -78,16 +77,16 @@ class TestDeploymentE2E:
 
         # Verify upload
         s3path_zip = s3dir_lambda.joinpath("layer", "layer.zip").to_file()
-        assert s3path_zip.exists(bsm=bsm)
+        assert s3path_zip.exists(s3_client=s3_client)
 
         # --- Step 4: Publish ---
         publisher = aws_lbd_art_builder_core.layer_api.LambdaLayerVersionPublisher(
             path_pyproject_toml=path_pyproject_toml,
             s3dir_lambda=s3dir_lambda,
             path_manifest=path_manifest,
-            s3_client=bsm,
+            s3_client=s3_client,
             layer_name=LAYER_NAME,
-            lambda_client=bsm.lambda_client,
+            lambda_client=lambda_client,
             publish_layer_version_kwargs={
                 "CompatibleRuntimes": ["python3.12"],
                 "Description": "test layer",
@@ -99,7 +98,7 @@ class TestDeploymentE2E:
         assert layer_deployment.layer_name == LAYER_NAME
         assert layer_deployment.layer_version == 1
         assert "arn:aws:lambda" in layer_deployment.layer_version_arn
-        assert layer_deployment.s3path_manifest.exists(bsm=bsm)
+        assert layer_deployment.s3path_manifest.exists(s3_client=s3_client)
 
 
 if __name__ == "__main__":

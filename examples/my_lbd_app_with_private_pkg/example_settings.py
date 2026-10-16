@@ -58,7 +58,7 @@ class Settings:
 
     @cached_property
     def bsm(self):
-        from boto_session_manager import BotoSesManager
+        from boto_session_manager.api import BotoSesManager
 
         return BotoSesManager(
             profile_name=self.aws_profile,
@@ -70,7 +70,7 @@ class Settings:
         if self.private_index_name is None:
             return None
 
-        from boto_session_manager import BotoSesManager
+        from boto_session_manager.api import BotoSesManager
 
         bsm = BotoSesManager(
             profile_name=os.environ["AWS_CODEARTIFACT_PROFILE"],
